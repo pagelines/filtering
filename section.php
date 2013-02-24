@@ -440,15 +440,11 @@ class Filtering extends PageLinesSection {
         $categories = get_categories('exclude='.$excludes.' ');
         
       
-$include = array();
+		$include = array();
 
-foreach ( $categories as $category )
-    $include[] = $category->term_id;
+		foreach ( $categories as $category )
+		    $include[] = $category->term_id;
 
-// query_posts( array( 'category__in' => $include ) );
-
-
-	print_r($include);
 
         $filtering_excerpt_len = (ploption('filtering_excerpt_length',$oset)) ? (ploption('filtering_excerpt_length',$oset)) : '150';
         
@@ -674,10 +670,12 @@ foreach ( $categories as $category )
 	<div class="inner-item">
 
 			<?php
-		
+			
 	if($filtering_image != 'only_text')	{
+		$image = wp_get_attachment_image_src( get_post_thumbnail_id( $post->ID ), 'single-post-thumbnail' );
+
 	
- 		if ( has_post_thumbnail() ) {
+ 		if ( $image ) {
  			?>
 		
 		<a href="<?php the_permalink(); ?>" title="<?php the_title_attribute(); ?>"><?php the_post_thumbnail(); ?></a>
