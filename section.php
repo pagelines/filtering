@@ -106,7 +106,7 @@ class Filtering extends PageLinesSection {
 
 
 				 
-				  	var mycontainer = jQuery('section.filtering');
+				  	var mycontainer = jQuery('.filtering');
 
 				      // add randomish size classes
 				      mycontainer.find('.filtering .item').each(function(){
@@ -133,20 +133,6 @@ class Filtering extends PageLinesSection {
 			  mycontainer.isotope({ filter: selector });
 			  return false;  
 			  });
-		  
-		
-
-	
-
-	 
-	
-	
-	
-		
-	
-
-	// target the wrapper of all of the elements to equalize,
-// in this case the divs inside of .wrapper
 
 });
 	
@@ -263,7 +249,20 @@ class Filtering extends PageLinesSection {
 							'default'		=> '250px',
 							
 							'inputlabel' 		=> __( "Width of item", 'pagelines'),
-						), 
+						),
+						'filtering_image_type' => array(
+								'type' 		=> 'select',
+								'default'	=> 'thumbs',
+								'selectvalues'	=> array(
+										'thumbs'	=> array('name' => __( 'Show Image on Top', 'pagelines') ), 
+										'only_thumbs'	=> array('name' => __( "Show Only the Image", 'pagelines') ),
+										'only_text'	=> array('name' => __( "Text Only, no image", 'pagelines') )
+
+									), 
+								'inputlabel' => __( 'Display Image (default is Show Image on Top)', 'pagelines'),				
+
+						),
+					 
 						'filtering_items' => array(
 							'default'		=> '6',
 							'type' 			=> 'text_small',
@@ -327,20 +326,9 @@ class Filtering extends PageLinesSection {
 								'type' 			=> 'text_small',
 								'size'			=> 'small',
 								'inputlabel' 		=> __( 'Add A Max-Height To Images ( to keep them tidy when on top : use a pixel value )', 'pagelines'),
+								),
 							),
-							'filtering_thumb_type' => array(
-								'type' 		=> 'select',
-								'default'	=> 'thumbs',
-								'selectvalues'	=> array(
-										'thumbs'	=> array('name' => __( 'Show Image on Top', 'pagelines') ), 
-										'only_thumbs'	=> array('name' => __( "Show Only the Image", 'pagelines') ),
-										'only_text'	=> array('name' => __( "Text Only, no image", 'pagelines') )
-
-									), 
-								'inputlabel' => __( 'Display Image (default is Show Image on Top)', 'pagelines'),				
-
-						),
-					), ),
+					 	),
 					
 					
 					'filtering_ordering' => array(
@@ -415,18 +403,14 @@ class Filtering extends PageLinesSection {
 				$this->draw_category_filtering();
 		}
         
-
-            
-
         
 
     }
   
-    function draw_filtering_categories(){
-
-    }
+    
    	
-   	 // Draw Pocket Archive
+   	 // Draw Category Filtering
+
     function draw_category_filtering($clone_id=null) {
 
         global $post; 
@@ -437,7 +421,7 @@ class Filtering extends PageLinesSection {
 		$filtering_order = ( ploption( 'filtering_order', $this->oset ) ) ? ploption( 'filtering_order', $this->oset ) : 'DESC';
 		$filtering_excludes = ( ploption( 'filtering_excludes', $this->oset ) ) ? ploption( 'filtering_excludes', $this->oset ) : '';
         $filtering_width = (ploption('filtering_item_width')) ? ploption('filtering_item_width').'px' : '250px';
-		$filtering_image = (ploption('filtering_thumb_type')) ? ploption('filtering_thumb_type') : 'thumbs';
+		$filtering_image = (ploption('filtering_image_type')) ? ploption('filtering_image_type') : 'thumbs';
 		
         $excludes = '';
         if($filtering_excludes) {
@@ -445,7 +429,7 @@ class Filtering extends PageLinesSection {
 		 $exclude_cats = explode(", ", $filtering_excludes);
 			foreach ($exclude_cats as &$exclude_cat) {
 				 $cat_id = get_category_by_slug($exclude_cat); 
-  				$exclude_cat = $cat_id->term_id;
+  				$exclude_cat =$cat_id->term_id;
 
 			}
 
@@ -455,12 +439,20 @@ class Filtering extends PageLinesSection {
                           
         $categories = get_categories('exclude='.$excludes.' ');
         
-        
+      
+$include = array();
 
+foreach ( $categories as $category )
+    $include[] = $category->term_id;
+
+// query_posts( array( 'category__in' => $include ) );
+
+
+	print_r($include);
 
         $filtering_excerpt_len = (ploption('filtering_excerpt_length',$oset)) ? (ploption('filtering_excerpt_length',$oset)) : '150';
         
-   		$args =  array( 'post_type' => 'post', 'posts_per_page' => -1, 'orderby'=>$filtering_orderby , 'order'=> $filtering_order, 'category__not_in'=> $excludes );
+   		$args =  array( 'post_type' => 'post', 'posts_per_page' => -1, 'orderby'=>$filtering_orderby , 'order'=> $filtering_order, 'category__in' => $include );
 		$filtering = new WP_Query( $args );
 		
       
@@ -571,6 +563,7 @@ class Filtering extends PageLinesSection {
 		$filtering_order = ( ploption( 'filtering_order', $this->oset ) ) ? ploption( 'filtering_order', $this->oset ) : 'DESC';
 		$filtering_excludes = ( ploption( 'filtering_excludes', $this->oset ) ) ? ploption( 'filtering_excludes', $this->oset ) : '';
         $filtering_width = (ploption('filtering_item_width')) ? ploption('filtering_item_width').'px' : '250px';
+		$filtering_image = (ploption('filtering_image_type')) ? ploption('filtering_image_type') : 'thumbs';
 		
         
 	 
@@ -599,17 +592,36 @@ class Filtering extends PageLinesSection {
             }
 
             $excludes= implode(", ", $exclude_term_array);
-            printf($excludes);
+           
 
         }
+         
+      
+      
+
+
+// query_posts( array( 'category__in' => $include ) );
+ $args3 = array(
+ 	'post_type' => $filtering_type,
+ 	'tax_query' => array(
+		array(
+			'taxonomy' => $filtering_tax,
+			'field' => 'id',
+			'terms' => $excludes,
+			'operator' => 'NOT IN'
+		)
+		));
+
+
+
         
         
 //	$te
    	$args = array( 'post_type' => $filtering_type, 'posts_per_page' => -1, 'orderby'=>$filtering_orderby , 'order'=> $filtering_order );
-		$filtering = new WP_Query( $args );
-	$args2 = array('exclude'=>$excludes);	
+		$filtering = new WP_Query( $args3 );
+	
+      $args2 = array('exclude'=>$excludes);	
 	$terms = get_terms($filtering_tax, $args2);
-      
        
 
 
@@ -652,35 +664,43 @@ class Filtering extends PageLinesSection {
              	endforeach;   
 	
 		
-             	printf( '<div class="item %s ">' , $terms_string);
+             	printf( '<div class="item %s " style="width: %s; margin-right: 10px;">' , $terms_string, $filtering_width);
 	
                
 	
 	
 	
 	?>
-	<div class=item-thumb>
-		<?php
-	if ( !has_post_thumbnail() ) {
-		?>
-			<a href="<?php the_permalink(); ?>" title="<?php the_title_attribute(); ?>"><?php the_post_thumbnail(); ?></a>
-	<?php
+	<div class="inner-item">
+
+			<?php
 		
+	if($filtering_image != 'only_text')	{
+	
+ 		if ( has_post_thumbnail() ) {
+ 			?>
+		
+		<a href="<?php the_permalink(); ?>" title="<?php the_title_attribute(); ?>"><?php the_post_thumbnail(); ?></a>
+	
+		<?php
 } else {
 
 
 		$image_src = plugins_url().'/pagelines-sections/filtering/images/no_thumb.png';
 		$permalink = get_permalink($post->ID);
 		$title = get_the_title($post->ID);
+
 		printf('<a href="%s"><img src="%s" alt="%s" /></a>' , $permalink, $image_src,  $title);
  } 
- ?>
+
 		
-		
-	</div>
 	
-		<div class=item-info>
-			<div class=item-title>
+	 }
+
+	if($filtering_image != 'only_thumbs')	{
+	?>
+		<div class="item-info">
+			<div class="item-title">
 				<h4><a href="<?php the_permalink(); ?>" title="<?php the_title_attribute(); ?>"><?php the_title(); ?></a></h4>
 			</div>
 
@@ -688,8 +708,11 @@ class Filtering extends PageLinesSection {
 		printf('<div class="item-excerpt">%s</div>', $filtering_excerpt );
 	?>
 	</div>
-
+	<?php }
+	?>
 	</div>
+	
+</div>
 	<?php
 	endwhile;
 	
