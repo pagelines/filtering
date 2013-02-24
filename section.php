@@ -36,103 +36,99 @@ class Filtering extends PageLinesSection {
 
   <script>
   jQuery(document).ready(function (){
-	
-	
+
+		jQuery(".inner-item").equalizeCols(); // Make row heights equal
+		
+		// Isotope Center Container
+
+	    jQuery.Isotope.prototype._getCenteredMasonryColumns = function() {
+	    this.width = this.element.width();
+
+	    var parentWidth = this.element.parent().width();
+
+	                  // i.e. options.masonry && options.masonry.columnWidth
+	    var colW = this.options.masonry && this.options.masonry.columnWidth ||
+	                  // or use the size of the first item
+	                  this.$filteredAtoms.outerWidth(true) ||
+	                  // if there's no items, use size of container
+	                  parentWidth;
+
+	    var cols = Math.floor( parentWidth / colW );
+	    cols = Math.max( cols, 1 );
+
+	    // i.e. this.masonry.cols = ....
+	    this.masonry.cols = cols;
+	    // i.e. this.masonry.columnWidth = ...
+	    this.masonry.columnWidth = colW;
+	  };
+
+	  jQuery.Isotope.prototype._masonryReset = function() {
+	    // layout-specific props
+	    this.masonry = {};
+	    // FIXME shouldn't have to call this again
+	    this._getCenteredMasonryColumns();
+	    var i = this.masonry.cols;
+	    this.masonry.colYs = [];
+	    while (i--) {
+	      this.masonry.colYs.push( 0 );
+	    }
+	  };
+
+	  jQuery.Isotope.prototype._masonryResizeChanged = function() {
+	    var prevColCount = this.masonry.cols;
+	    // get updated colCount
+	    this._getCenteredMasonryColumns();
+	    return ( this.masonry.cols !== prevColCount );
+	  };
+
+	  jQuery.Isotope.prototype._masonryGetContainerSize = function() {
+	    var unusedCols = 0,
+	        i = this.masonry.cols;
+	    // count unused columns
+	    while ( --i ) {
+	      if ( this.masonry.colYs[i] !== 0 ) {
+	        break;
+	      }
+	      unusedCols++;
+	    }
+
+	    return {
+	          height : Math.max.apply( Math, this.masonry.colYs ),
+	          // fit container to columns that have been used;
+	          width : (this.masonry.cols - unusedCols) * this.masonry.columnWidth
+	        };
+	  };
+
+
+	  // Call Isotope
+	 
+	  	var mycontainer = jQuery('.filtering');
+
+	      // add randomish size classes
+	      mycontainer.find('.filtering .item').each(function(){
+	        var $this = jQuery(this),
+	            number = parseInt( $this.find('.item-info.item-title').text(), 10 );
+	        if ( number % 7 % 2 === 1 ) {
+	          $this.addClass('width2');
+	        }
+	        if ( number % 3 === 0 ) {
+	          $this.addClass('height2');
+	        }
+	      });
 
 		
-		jQuery(".inner-item").equalizeCols();
-		
-	
-
-				    
-				    jQuery.Isotope.prototype._getCenteredMasonryColumns = function() {
-				    this.width = this.element.width();
-
-				    var parentWidth = this.element.parent().width();
-
-				                  // i.e. options.masonry && options.masonry.columnWidth
-				    var colW = this.options.masonry && this.options.masonry.columnWidth ||
-				                  // or use the size of the first item
-				                  this.$filteredAtoms.outerWidth(true) ||
-				                  // if there's no items, use size of container
-				                  parentWidth;
-
-				    var cols = Math.floor( parentWidth / colW );
-				    cols = Math.max( cols, 1 );
-
-				    // i.e. this.masonry.cols = ....
-				    this.masonry.cols = cols;
-				    // i.e. this.masonry.columnWidth = ...
-				    this.masonry.columnWidth = colW;
-				  };
-
-				  jQuery.Isotope.prototype._masonryReset = function() {
-				    // layout-specific props
-				    this.masonry = {};
-				    // FIXME shouldn't have to call this again
-				    this._getCenteredMasonryColumns();
-				    var i = this.masonry.cols;
-				    this.masonry.colYs = [];
-				    while (i--) {
-				      this.masonry.colYs.push( 0 );
-				    }
-				  };
-
-				  jQuery.Isotope.prototype._masonryResizeChanged = function() {
-				    var prevColCount = this.masonry.cols;
-				    // get updated colCount
-				    this._getCenteredMasonryColumns();
-				    return ( this.masonry.cols !== prevColCount );
-				  };
-
-				  jQuery.Isotope.prototype._masonryGetContainerSize = function() {
-				    var unusedCols = 0,
-				        i = this.masonry.cols;
-				    // count unused columns
-				    while ( --i ) {
-				      if ( this.masonry.colYs[i] !== 0 ) {
-				        break;
-				      }
-				      unusedCols++;
-				    }
-
-				    return {
-				          height : Math.max.apply( Math, this.masonry.colYs ),
-				          // fit container to columns that have been used;
-				          width : (this.masonry.cols - unusedCols) * this.masonry.columnWidth
-				        };
-				  };
-
-
-
-				 
-				  	var mycontainer = jQuery('.filtering');
-
-				      // add randomish size classes
-				      mycontainer.find('.filtering .item').each(function(){
-				        var $this = jQuery(this),
-				            number = parseInt( $this.find('.item-info.item-title').text(), 10 );
-				        if ( number % 7 % 2 === 1 ) {
-				          $this.addClass('width2');
-				        }
-				        if ( number % 3 === 0 ) {
-				          $this.addClass('height2');
-				        }
-				      });
-
-    				
-				      mycontainer.isotope({
-					      itemSelector: '.item' 
-					       
-					  });
-     				
-			        
-			   // filter items when filter link is clicked
-			jQuery('#options a').click(function(){
-			  var selector = jQuery(this).attr('data-filter');
-			  mycontainer.isotope({ filter: selector });
-			  return false;  
-			  });
+	      mycontainer.isotope({
+		      itemSelector: '.item' 
+		       
+		  });
+			
+        
+	   // filter items when filter link is clicked
+	jQuery('#options a').click(function(){
+	  var selector = jQuery(this).attr('data-filter');
+	  mycontainer.isotope({ filter: selector });
+	  return false;  
+	  });
 
 });
 	
@@ -160,12 +156,7 @@ class Filtering extends PageLinesSection {
 			// Merge Builtin types and 'important' CPTs to resulting array to use as argument.
 			$post_types = array_merge($builtin, $cpts);
 		
-
-			
-
-		//	$post_types=get_post_types(array('public'   => true, '_builtin' => false)); 
-			
-				if(!empty($post_types)){
+			if(!empty($post_types)){
 	
 					foreach($post_types as $post_type){
 	
@@ -179,6 +170,9 @@ class Filtering extends PageLinesSection {
 		
 				}
 
+				// Get Taxonomies
+
+				// Exclude some Pagelines Taxonomies
 				$exclude_taxonomies = array(
 	    			'box-sets',
 	    			'banner-sets',
@@ -221,26 +215,26 @@ class Filtering extends PageLinesSection {
 				
 				'filtering_setup' => array(
 					'type'		=> 'multi_option', 
-					'title'		=> __('Filtering Setup Options', 'pagelines'), 
-					'shortexp'	=> __('Basic setup options for handling of filltering.', 'pagelines'),
-					'exp'			=> __( '', 'pagelines'),
+					'title'		=> __('Filtering Setup Options', 'filtering'), 
+					'shortexp'	=> __('Basic setup options for handling of filltering.', 'filtering'),
+					'exp'			=> __( '', 'filtering'),
 					'selectvalues'	=> array(
 						'filtering_post_type' => array(
 							'default'		=> 'posts',
 							'type' 			=> 'select',
 							'selectvalues' 			=> $post_type_array,
-							'inputlabel'	=> __( 'List your page/post IDs To Query ( comma separated )', 'pagelines'),
+							'inputlabel'	=> __( 'Select your post type to filter', 'filtering'),
 						), 
 						'filtering_taxonomy' => array(
 							'default'		=> 'categories',
 							'type' 			=> 'select',
 							'selectvalues' => $taxonomy_array,
-							'inputlabel'	=> __( 'Category To Show ( if the default category taxonomy is supported by the chosen post type )', 'pagelines'),
+							'inputlabel'	=> __( 'Select taxonomy. Make sure the taxonomy goes with the post type, i.e. categories with posts', 'filtering'),
 						), 
 						'filtering_excludes' => array(
 							'default'		=> '',
 							'type' 			=> 'text',
-							'inputlabel'	=> __( 'Excluded Categories/Terms. Must be slug ( if multiple, separate using a comma )', 'pagelines'),				
+							'inputlabel'	=> __( 'Enter Excluded Categories/Terms  ( if multiple, separate using a comma )', 'filtering'),				
 
 						),
 						
@@ -248,18 +242,18 @@ class Filtering extends PageLinesSection {
 							'type' 			=> 'text_small',
 							'default'		=> '250px',
 							
-							'inputlabel' 		=> __( "Width of item", 'pagelines'),
+							'inputlabel' 		=> __( 'Width of  each item item. Default is 250px. Enter just the width value, px will be added for you.' , 'filtering'),
 						),
 						'filtering_image_type' => array(
 								'type' 		=> 'select',
 								'default'	=> 'thumbs',
 								'selectvalues'	=> array(
-										'thumbs'	=> array('name' => __( 'Show Image on Top', 'pagelines') ), 
-										'only_thumbs'	=> array('name' => __( "Show Only the Image", 'pagelines') ),
-										'only_text'	=> array('name' => __( "Text Only, no image", 'pagelines') )
+										'thumbs'	=> array('name' => __( 'Show Image on Top', 'filtering') ), 
+										'only_thumbs'	=> array('name' => __( "Show Only the Image", 'filtering') ),
+										'only_text'	=> array('name' => __( "Text Only, no image", 'filtering') )
 
 									), 
-								'inputlabel' => __( 'Display Image (default is Show Image on Top)', 'pagelines'),				
+								'inputlabel' => __( 'Display Image (default is Show Image on Top)', 'filtering'),				
 
 						),
 					 
@@ -267,7 +261,7 @@ class Filtering extends PageLinesSection {
 							'default'		=> '6',
 							'type' 			=> 'text_small',
 							'size'			=> 'small',
-							'inputlabel' 	=> __( 'Maximum Boxes To Show', 'pagelines'),
+							'inputlabel' 	=> __( 'Maximum Boxes To Show', 'filtering'),
 						),
 						
 					),
@@ -275,31 +269,31 @@ class Filtering extends PageLinesSection {
 				
 					'filtering_excerpt_formatting' => array(
 						'type'		=> 'multi_option', 
-						'title'		=> __('Box Excerpt Options', 'pagelines'), 
-						'shortexp'	=> __('Options for formatting box excerpts.', 'pagelines'),
-						'exp'		=> __('', 'pagelines'),
+						'title'		=> __('Filtering Excerpt Options', 'filtering'), 
+						'shortexp'	=> __('Options for formatting box excerpts.', 'filtering'),
+						'exp'		=> __('', 'filtering'),
 						'selectvalues'	=> array(
 							'filtering_show_excerpt' => array(
 									'default'		=> 0,
 									'type' 			=> 'check',
 									'size'			=> 'small',
-									'inputlabel' 		=> __( 'Show the excerpt?', 'pagelines'),
+									'inputlabel' 		=> __( 'Show the excerpt?', 'filtering'),
 								),
 													
 							'filtering_excerpt_length' => array(
 								'default'		=> '20',
 								'type' 			=> 'text_small',
 								'size'			=> 'small',
-								'inputlabel' 	=> __( 'Max number of words for excerpts', 'pagelines'),
+								'inputlabel' 	=> __( 'Max number of words for excerpts', 'filtering'),
 							),
 							
 						),
 					),
 					'filtering_image_formatting' => array(
 						'type'		=> 'multi_option', 
-						'title'		=> __('Box Image Options', 'pagelines'), 
-						'shortexp'	=> __('Options for formatting box images.', 'pagelines'),
-						'exp'		=> __('', 'pagelines'),
+						'title'		=> __('Box Image Options', 'filtering'), 
+						'shortexp'	=> __('Options for formatting box images.', 'filtering'),
+						'exp'		=> __('', 'filtering'),
 						'selectvalues'	=> array(
 							
 							
@@ -307,25 +301,25 @@ class Filtering extends PageLinesSection {
 								'default'		=> '64',
 								'type' 			=> 'text_small',
 								'size'			=> 'small',
-								'inputlabel' 		=> __( 'Enter the max image size in pixels (optional)', 'pagelines'),
+								'inputlabel' 		=> __( 'Enter the max image size in pixels (optional)', 'filtering'),
 							),
 							'filtering_max_image_attachment' => array(
 								'default'		=> '600',
 								'type' 			=> 'text',
 								'size'			=> 'small',
-								'inputlabel' 		=> __( 'Enter the maximum attachment size in pixels e.g. "300"</br>– OR –</br>as an attachment string e.g. "thumbnail"', 'pagelines'),
+								'inputlabel' 		=> __( 'Enter the maximum attachment size in pixels e.g. "300"</br>– OR –</br>as an attachment string e.g. "thumbnail"', 'filtering'),
 							),
 							'filtering_thumb_frame' => array(
 								'default'		=> 0,
 								'type' 			=> 'check',
 								'size'			=> 'small',
-								'inputlabel' 		=> __( 'Add A Frame To Images', 'pagelines'),
+								'inputlabel' 		=> __( 'Add A Frame To Images', 'filtering'),
 							),
 							'filtering_max_height' => array(
 								'default'		=> '',
 								'type' 			=> 'text_small',
 								'size'			=> 'small',
-								'inputlabel' 		=> __( 'Add A Max-Height To Images ( to keep them tidy when on top : use a pixel value )', 'pagelines'),
+								'inputlabel' 		=> __( 'Add A Max-Height To Images ( to keep them tidy when on top : use a pixel value )', 'filtering'),
 								),
 							),
 					 	),
@@ -333,9 +327,9 @@ class Filtering extends PageLinesSection {
 					
 					'filtering_ordering' => array(
 						'type'		=> 'multi_option', 
-						'title'		=> __('Box Ordering Options', 'pagelines'), 
-						'shortexp'	=> __('Optionally control the ordering of the boxes', 'pagelines'),
-						'exp'		=> __('The easiest way to order boxes is using a post type order plugin for WordPress. However, if you would like to do it algorithmically, we have provided these options for you.', 'pagelines'),
+						'title'		=> __('Box Ordering Options', 'filtering'), 
+						'shortexp'	=> __('Optionally control the ordering of the boxes', 'filtering'),
+						'exp'		=> __('The easiest way to order boxes is using a post type order plugin for WordPress. However, if you would like to do it algorithmically, we have provided these options for you.', 'filtering'),
 						'selectvalues'	=> array(
 							
 							'filtering_orderby' => array(
@@ -343,21 +337,21 @@ class Filtering extends PageLinesSection {
 								'default'		=> 'ID',
 								'inputlabel'	=> 'Order Boxes By (If Not With Post Type Order Plugin)',
 								'selectvalues' => array(
-									'ID' 		=> array('name' => __( 'Post ID (default)', 'pagelines') ),
-									'title' 	=> array('name' => __( 'Title', 'pagelines') ),
-									'date' 		=> array('name' => __( 'Date', 'pagelines') ),
-									'modified' 	=> array('name' => __( 'Last Modified', 'pagelines') ),
-									'rand' 		=> array('name' => __( 'Random', 'pagelines') ),							
+									'ID' 		=> array('name' => __( 'Post ID (default)', 'filtering') ),
+									'title' 	=> array('name' => __( 'Title', 'filtering') ),
+									'date' 		=> array('name' => __( 'Date', 'filtering') ),
+									'modified' 	=> array('name' => __( 'Last Modified', 'filtering') ),
+									'rand' 		=> array('name' => __( 'Random', 'filtering') ),							
 								)
 							),
 							'filtering_order' => array(
 									'default' => 'DESC',
 									'type' => 'select',
 									'selectvalues' => array(
-										'DESC' 		=> array('name' => __( 'Descending', 'pagelines') ),
-										'ASC' 		=> array('name' => __( 'Ascending', 'pagelines') ),
+										'DESC' 		=> array('name' => __( 'Descending', 'filtering') ),
+										'ASC' 		=> array('name' => __( 'Ascending', 'filtering') ),
 									),
-									'inputlabel'=> __( 'Select sort order', 'pagelines'),
+									'inputlabel'=> __( 'Select sort order', 'filtering'),
 							),
 						),
 					),
@@ -365,14 +359,14 @@ class Filtering extends PageLinesSection {
 					
 					'filtering_styles' => array(
 						'type'		=> 'multi_option', 
-						'title' 		=> __( 'Custom CSS class', 'pagelines'),
-						'shortexp' 		=> __( 'Add a custom CSS class to this set of boxes.', 'pagelines'),
+						'title' 		=> __( 'Custom CSS class', 'filtering'),
+						'shortexp' 		=> __( 'Add a custom CSS class to this set of boxes.', 'filtering'),
 						'selectvalues'	=> array(
 							'filtering_class' => array(
 								'default'		=> '',
 								'type' 			=> 'text',
 								'size'			=> 'small',
-								'inputlabel' 	=> __( 'Add custom css class to these boxes (Hint: try "custom1" with "thumbs on top" mode)', 'pagelines'),
+								'inputlabel' 	=> __( 'Add custom css class to these boxes (Hint: try "custom1" with "thumbs on top" mode)', 'filtering'),
 								),
 							),
 						),
@@ -391,16 +385,22 @@ class Filtering extends PageLinesSection {
 
 	function section_template( $clone_id=null) {
 
-        global $post; global $pagelines_ID;
-        $oset = array('post_id' => $pagelines_ID, 'clone_id' => $clone_id);
+        global $post; global $filtering_ID;
+        $oset = array('post_id' => $filtering_ID, 'clone_id' => $clone_id);
         $per_row = ( ploption( 'filtering_col_number', $this->oset) ) ? ploption( 'filtering_col_number', $this->oset) : 3;
        	$filtering_type = ( ploption( 'filtering_post_type', $this->oset ) ) ? ploption( 'filtering_post_type', $this->oset ) : null;
 		$filtering_tax = ( ploption( 'filtering_taxonomy', $this->oset ) ) ? ploption( 'filtering_taxonomy', $this->oset ) : null;
+		$filtering_class = ( ploption( 'filtering_class', $this->oset ) ) ? ploption( 'filtering_class', $this->oset ) : null;
 		
+
 		if($filtering_tax!='categories'){
-			$this->draw_taxonomy_filtering();
-			}else {
+			printf( '<div class="section-filtering %s">' , $filtering_class);
+				$this->draw_taxonomy_filtering();
+			echo '</div>';
+		}else {
+			printf( '<div class="section-filtering %s">' , $filtering_class);
 				$this->draw_category_filtering();
+			echo '</div>';	
 		}
         
         
@@ -414,9 +414,9 @@ class Filtering extends PageLinesSection {
     function draw_category_filtering($clone_id=null) {
 
         global $post; 
-        global $pagelines_ID;
+        global $filtering_ID;
 
-        $oset = array('post_id' => $pagelines_ID);
+        $oset = array('post_id' => $filtering_ID);
         $filtering_orderby = ( ploption( 'filtering_orderby', $this->oset ) ) ? ploption( 'filtering_orderby', $this->oset ) : 'ID';
 		$filtering_order = ( ploption( 'filtering_order', $this->oset ) ) ? ploption( 'filtering_order', $this->oset ) : 'DESC';
 		$filtering_excludes = ( ploption( 'filtering_excludes', $this->oset ) ) ? ploption( 'filtering_excludes', $this->oset ) : '';
@@ -552,7 +552,7 @@ class Filtering extends PageLinesSection {
 
     function draw_taxonomy_filtering($clone_id=null) {
     	global $post; 
-        global $pagelines_ID;
+        global $filtering_ID;
     	$filtering_type = ( ploption( 'filtering_post_type', $this->oset ) ) ? ploption( 'filtering_post_type', $this->oset ) : null;
 		$filtering_tax = ( ploption( 'filtering_taxonomy', $this->oset ) ) ? ploption( 'filtering_taxonomy', $this->oset ) : null;
 		$filtering_orderby = ( ploption( 'filtering_orderby', $this->oset ) ) ? ploption( 'filtering_orderby', $this->oset ) : 'ID';
@@ -566,7 +566,7 @@ class Filtering extends PageLinesSection {
        
         
 
-        $oset = array('post_id' => $pagelines_ID);
+        $oset = array('post_id' => $filtering_ID);
 
         
         $filtering_excerpt_len = (ploption('filtering_excerpt_length',$oset)) ? (ploption('filtering_excerpt_length',$oset)) : '150';
@@ -592,32 +592,32 @@ class Filtering extends PageLinesSection {
 
         }
          
-      
-      
+      $args2 = array('exclude'=>$excludes);	
+	$terms = get_terms($filtering_tax, $args2);
+      $include = array();
+
+		foreach ( $terms as $term )
+		    $include[] = $term->term_id;
 
 
-// query_posts( array( 'category__in' => $include ) );
- $args3 = array(
+
+
+ $args = array(
  	'post_type' => $filtering_type,
  	'tax_query' => array(
 		array(
 			'taxonomy' => $filtering_tax,
 			'field' => 'id',
-			'terms' => $excludes,
-			'operator' => 'NOT IN'
+			'terms' => $include
+			
 		)
-		));
-
-
-
+		));   
         
-        
-//	$te
-   	$args = array( 'post_type' => $filtering_type, 'posts_per_page' => -1, 'orderby'=>$filtering_orderby , 'order'=> $filtering_order );
-		$filtering = new WP_Query( $args3 );
+
+ //  	$args = array( 'post_type' => $filtering_type, 'posts_per_page' => -1, 'orderby'=>$filtering_orderby , 'order'=> $filtering_order );
+		$filtering = new WP_Query( $args );
 	
-      $args2 = array('exclude'=>$excludes);	
-	$terms = get_terms($filtering_tax, $args2);
+      
        
 
 
