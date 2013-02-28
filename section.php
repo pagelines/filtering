@@ -24,116 +24,55 @@ class Filtering extends PageLinesSection {
 	*/
 	function section_styles(){
 		
-		wp_enqueue_script( 'isotope', $this->base_url.'/js/jquery.isotope.min.js');
+		wp_enqueue_script( 'isotope', $this->base_url.'/js/jquery.isotope.min.js', array('jquery'));
+		wp_enqueue_script( 'filtering', $this->base_url.'/js/filtering.js');
 		wp_enqueue_script( 'equalize', $this->base_url.'/js/equalizecols.js');
 		wp_enqueue_script( 'easing', $this->base_url.'/js/jquery.easing.js');
 		
 		}
 
-	function section_head( $clone_id ) {  
+	function section_head( $clone_id ) {
 
-		?>
-
-  <script>
-  jQuery(document).ready(function (){
-
-		jQuery(".inner-item").equalizeCols(); // Make row heights equal
+	global $pagelines_ID;
+		$oset = array('post_id' => $pagelines_ID, 'clone_id' => $clone_id);		
 		
-		// Isotope Center Container
-
-	    jQuery.Isotope.prototype._getCenteredMasonryColumns = function() {
-	    this.width = this.element.width();
-
-	    var parentWidth = this.element.parent().width();
-
-	                  // i.e. options.masonry && options.masonry.columnWidth
-	    var colW = this.options.masonry && this.options.masonry.columnWidth ||
-	                  // or use the size of the first item
-	                  this.$filteredAtoms.outerWidth(true) ||
-	                  // if there's no items, use size of container
-	                  parentWidth;
-
-	    var cols = Math.floor( parentWidth / colW );
-	    cols = Math.max( cols, 1 );
-
-	    // i.e. this.masonry.cols = ....
-	    this.masonry.cols = cols;
-	    // i.e. this.masonry.columnWidth = ...
-	    this.masonry.columnWidth = colW;
-	  };
-
-	  jQuery.Isotope.prototype._masonryReset = function() {
-	    // layout-specific props
-	    this.masonry = {};
-	    // FIXME shouldn't have to call this again
-	    this._getCenteredMasonryColumns();
-	    var i = this.masonry.cols;
-	    this.masonry.colYs = [];
-	    while (i--) {
-	      this.masonry.colYs.push( 0 );
-	    }
-	  };
-
-	  jQuery.Isotope.prototype._masonryResizeChanged = function() {
-	    var prevColCount = this.masonry.cols;
-	    // get updated colCount
-	    this._getCenteredMasonryColumns();
-	    return ( this.masonry.cols !== prevColCount );
-	  };
-
-	  jQuery.Isotope.prototype._masonryGetContainerSize = function() {
-	    var unusedCols = 0,
-	        i = this.masonry.cols;
-	    // count unused columns
-	    while ( --i ) {
-	      if ( this.masonry.colYs[i] !== 0 ) {
-	        break;
-	      }
-	      unusedCols++;
-	    }
-
-	    return {
-	          height : Math.max.apply( Math, this.masonry.colYs ),
-	          // fit container to columns that have been used;
-	          width : (this.masonry.cols - unusedCols) * this.masonry.columnWidth
-	        };
-	  };
-
-
-	  // Call Isotope
-	 
-	  	var mycontainer = jQuery('.filtering');
-
-	      // add randomish size classes
-	      mycontainer.find('.filtering .item').each(function(){
-	        var $this = jQuery(this),
-	            number = parseInt( $this.find('.item-info.item-title').text(), 10 );
-	        if ( number % 7 % 2 === 1 ) {
-	          $this.addClass('width2');
-	        }
-	        if ( number % 3 === 0 ) {
-	          $this.addClass('height2');
-	        }
-	      });
-
-		
-	      mycontainer.isotope({
-		      itemSelector: '.item' 
-		       
-		  });
+		$filtering_max_height = ( ploption( 'filtering_max_height', $oset ) ) ? ploption( 'filtering_max_height', $oset ) : '';
+		if ($filtering_max_height != ''){
+			echo '<style type="text/css">.filtering-image {max-height:'.$filtering_max_height.'px;overflow:hidden;}</style>';
+		}
+		$thumbnail_width = get_option( 'thumbnail_size_w' );
+		$thumbnail_height = get_option( 'thumbnail_size_h' );
+		$filtering_image_width = (ploption('filtering_image_width')) ? ploption('filtering_image_width') : null;
+		$filtering_image_height = (ploption('filtering_image_height')) ? ploption('filtering_image_height') : null;
+		if(!$filtering_image_width) {
+		 	$image_height = $thumbnail_height;
+			$image_width = $thumbnail_width;
 			
-        
-	   // filter items when filter link is clicked
-	jQuery('#options a').click(function(){
-	  var selector = jQuery(this).attr('data-filter');
-	  mycontainer.isotope({ filter: selector });
-	  return false;  
-	  });
+			
+		}
+		else  {
+			$image_width = $filtering_image_width;
+			$image_height = $filtering_image_height;
+			
+		}
 
-});
-	
-  </script>
- <?php
+  	?>
+  	<script>
+  	jQuery(window).load(function (){
+  		var image_width = <?php echo $image_width?>;
+  		
+		
+		
+		 
+  		jQuery('img.filtering_image').addClass("image-sizes");
+		
+		jQuery('img.filtering_image').css('max-width', image_width);
+	});
+
+  	</script>
+
+  	<?php
+
 	
 	}
 
@@ -147,7 +86,7 @@ class Filtering extends PageLinesSection {
 			'post',
 			
 			);
-			// All CPTs.
+			// All CPTs except builtins
 			$cpts = get_post_types( array(
 			'public'   => true,
 			'_builtin' => false
@@ -195,9 +134,7 @@ class Filtering extends PageLinesSection {
 				$taxonomies = array_merge($builtin, $taxs);	
 	
 			$taxonomies_array = array();	
-		
-			
-			
+	
 				if  ($taxonomies) {
   				foreach ($taxonomies  as $taxonomy ) {
     				$taxonomy_array[$taxonomy] = array(
@@ -216,7 +153,7 @@ class Filtering extends PageLinesSection {
 				'filtering_setup' => array(
 					'type'		=> 'multi_option', 
 					'title'		=> __('Filtering Setup Options', 'filtering'), 
-					'shortexp'	=> __('Basic setup options for handling of filltering.', 'filtering'),
+					'shortexp'	=> __('Basic setup options for handling of filtering.', 'filtering'),
 					'exp'			=> __( '', 'filtering'),
 					'selectvalues'	=> array(
 						'filtering_post_type' => array(
@@ -234,7 +171,7 @@ class Filtering extends PageLinesSection {
 						'filtering_excludes' => array(
 							'default'		=> '',
 							'type' 			=> 'text',
-							'inputlabel'	=> __( 'Enter Excluded Categories/Terms  ( if multiple, separate using a comma )', 'filtering'),				
+							'inputlabel'	=> __( 'Enter Excluded Categories or Terms  ( if multiple, separate using a comma )', 'filtering'),				
 
 						),
 						
@@ -242,14 +179,15 @@ class Filtering extends PageLinesSection {
 							'type' 			=> 'text_small',
 							'default'		=> '250px',
 							
-							'inputlabel' 		=> __( 'Width of  each item item. Default is 250px. Enter just the width value, px will be added for you.' , 'filtering'),
+							'inputlabel' 		=> __( 'Width of  each item item. Default is 250px. Enter just the width value, px will be added for you. This value also controls the width of your image if displaying featured image' , 'filtering'),
 						),
+
 						'filtering_image_type' => array(
 								'type' 		=> 'select',
-								'default'	=> 'thumbs',
+								'default'	=> 'images',
 								'selectvalues'	=> array(
-										'thumbs'	=> array('name' => __( 'Show Image on Top', 'filtering') ), 
-										'only_thumbs'	=> array('name' => __( "Show Only the Image", 'filtering') ),
+										'images'	=> array('name' => __( 'Show Image on Top', 'filtering') ), 
+										'only_images'	=> array('name' => __( "Show Only the Image", 'filtering') ),
 										'only_text'	=> array('name' => __( "Text Only, no image", 'filtering') )
 
 									), 
@@ -257,12 +195,7 @@ class Filtering extends PageLinesSection {
 
 						),
 					 
-						'filtering_items' => array(
-							'default'		=> '6',
-							'type' 			=> 'text_small',
-							'size'			=> 'small',
-							'inputlabel' 	=> __( 'Maximum Boxes To Show', 'filtering'),
-						),
+						
 						
 					),
 				),
@@ -291,36 +224,43 @@ class Filtering extends PageLinesSection {
 					),
 					'filtering_image_formatting' => array(
 						'type'		=> 'multi_option', 
-						'title'		=> __('Box Image Options', 'filtering'), 
-						'shortexp'	=> __('Options for formatting box images.', 'filtering'),
+						'title'		=> __('Extra Image Options (Optional)', 'filtering'), 
+						'shortexp'	=> __('By default Filtering uses the featured image from your posts and are thumbnail sized (thumbnail sizes are set in WordPress Settings -> Media). If you want your images to be another size, enter the width and height below. You can also upload an image to use when no featured image is present. ', 'filtering'),
 						'exp'		=> __('', 'filtering'),
 						'selectvalues'	=> array(
 							
 							
-							'filtering_thumb_size' => array(
-								'default'		=> '64',
-								'type' 			=> 'text_small',
-								'size'			=> 'small',
-								'inputlabel' 		=> __( 'Enter the max image size in pixels (optional)', 'filtering'),
+							'filtering_image_size' => array(
+								'type' 			=> 'multi_option',
+								'selectvalues'	=> array(
+									 	'filtering_image_width' => array(
+											'default'		=> '',
+											'type' 			=> 'text_small',
+											'size'			=> 'small',
+											'inputlabel' 		=> __( 'Image width (optional)', 'filtering'),
+											),
+										'filtering_image_height' => array(
+											'default'		=> '',
+											'type' 			=> 'text_small',
+											'size'			=> 'small',
+											'inputlabel' 		=> __( 'Add A Max-Height To Images ( to keep them tidy when on top : use a pixel value )', 'filtering'),
+											),	
+									), 
+								),
+							'filtering_default_image' => array(
+								
+								'type' 			=> 'image_upload',
+								'inputlabel' 		=> __( 'Upload an image to use when no thumbnail present', 'filtering'),
 							),
-							'filtering_max_image_attachment' => array(
-								'default'		=> '600',
-								'type' 			=> 'text',
-								'size'			=> 'small',
-								'inputlabel' 		=> __( 'Enter the maximum attachment size in pixels e.g. "300"</br>– OR –</br>as an attachment string e.g. "thumbnail"', 'filtering'),
-							),
+							
 							'filtering_thumb_frame' => array(
 								'default'		=> 0,
 								'type' 			=> 'check',
 								'size'			=> 'small',
 								'inputlabel' 		=> __( 'Add A Frame To Images', 'filtering'),
 							),
-							'filtering_max_height' => array(
-								'default'		=> '',
-								'type' 			=> 'text_small',
-								'size'			=> 'small',
-								'inputlabel' 		=> __( 'Add A Max-Height To Images ( to keep them tidy when on top : use a pixel value )', 'filtering'),
-								),
+							
+
 							),
 					 	),
 					
@@ -396,14 +336,17 @@ class Filtering extends PageLinesSection {
 		if($filtering_tax!='categories'){
 			printf( '<div class="section-filtering %s">' , $filtering_class);
 				$this->draw_taxonomy_filtering();
+				
 			echo '</div>';
+
 		}else {
 			printf( '<div class="section-filtering %s">' , $filtering_class);
 				$this->draw_category_filtering();
+			
 			echo '</div>';	
 		}
         
-        
+       
 
     }
   
@@ -421,7 +364,10 @@ class Filtering extends PageLinesSection {
 		$filtering_order = ( ploption( 'filtering_order', $this->oset ) ) ? ploption( 'filtering_order', $this->oset ) : 'DESC';
 		$filtering_excludes = ( ploption( 'filtering_excludes', $this->oset ) ) ? ploption( 'filtering_excludes', $this->oset ) : '';
         $filtering_width = (ploption('filtering_item_width')) ? ploption('filtering_item_width').'px' : '250px';
-		$filtering_image = (ploption('filtering_image_type')) ? ploption('filtering_image_type') : 'thumbs';
+		$filtering_image = (ploption('filtering_image_type')) ? ploption('filtering_image_type') : 'images';
+		$filtering_image_width = (ploption('filtering_image_width')) ? ploption('filtering_image_width') : null;
+		$filtering_image_height = (ploption('filtering_image_height')) ? ploption('filtering_image_height') : null;
+
 		
         $excludes = '';
         if($filtering_excludes) {
@@ -550,7 +496,7 @@ class Filtering extends PageLinesSection {
 
 // Taxonomy items
 
-    function draw_taxonomy_filtering($clone_id=null) {
+    function draw_taxonomy_filtering() {
     	global $post; 
         global $filtering_ID;
     	$filtering_type = ( ploption( 'filtering_post_type', $this->oset ) ) ? ploption( 'filtering_post_type', $this->oset ) : null;
@@ -559,11 +505,25 @@ class Filtering extends PageLinesSection {
 		$filtering_order = ( ploption( 'filtering_order', $this->oset ) ) ? ploption( 'filtering_order', $this->oset ) : 'DESC';
 		$filtering_excludes = ( ploption( 'filtering_excludes', $this->oset ) ) ? ploption( 'filtering_excludes', $this->oset ) : '';
         $filtering_width = (ploption('filtering_item_width')) ? ploption('filtering_item_width').'px' : '250px';
-		$filtering_image = (ploption('filtering_image_type')) ? ploption('filtering_image_type') : 'thumbs';
+		$filtering_show_excerpt = (ploption('filtering_show_excerpt')) ? ploption('filtering_show_excerpt') : null;
 		
-        
-	 
-       
+		$filtering_image = (ploption('filtering_image_type')) ? ploption('filtering_image_type') : 'images';
+       	$filtering_image_width = (ploption('filtering_image_width')) ? ploption('filtering_image_width') : null;
+		$filtering_image_height = (ploption('filtering_image_height')) ? ploption('filtering_image_height') : null;
+       	$filtering_default =  ( ploption( 'filtering_default_image', $this->oset ) ) ? ploption( 'filtering_default_image', $this->oset ) : '' ;
+       	$thumbnail_width = get_option( 'thumbnail_size_w' );
+		$thumbnail_height = get_option( 'thumbnail_size_h' );
+		if(!$filtering_image_width) {
+		 	$image_height = $thumbnail_height . 'px';
+			$image_width = $thumbnail_width . 'px';
+			
+			
+		}
+		else  {
+			$image_width = $filtering_image_width . 'px';
+			$image_height = $filtering_image_height . 'px';
+			
+		}
         
 
         $oset = array('post_id' => $filtering_ID);
@@ -571,10 +531,6 @@ class Filtering extends PageLinesSection {
         
         $filtering_excerpt_len = (ploption('filtering_excerpt_length',$oset)) ? (ploption('filtering_excerpt_length',$oset)) : '150';
         
-        $postCategories = get_the_category($post->ID);
-			foreach ( $postCategories as $postCategory ) {
-			$myCategories[] = get_term_by('id', $postCategory->cat_ID, 'category');
-			}
 
 		$excludes = '';
         if($filtering_excludes) {
@@ -593,28 +549,28 @@ class Filtering extends PageLinesSection {
         }
          
       $args2 = array('exclude'=>$excludes);	
-	$terms = get_terms($filtering_tax, $args2);
+	  $terms = get_terms($filtering_tax, $args2);
       $include = array();
 
 		foreach ( $terms as $term )
 		    $include[] = $term->term_id;
 
 
-
-
- $args = array(
- 	'post_type' => $filtering_type,
- 	'tax_query' => array(
-		array(
-			'taxonomy' => $filtering_tax,
-			'field' => 'id',
-			'terms' => $include
-			
-		)
-		));   
+	 $args = array(
+	 	'post_type' => $filtering_type,
+	 	'posts_per_page' => -1,
+	 	'orderby'=>$filtering_orderby ,
+	 	'order'=> $filtering_order,
+	 	
+	 	'tax_query' => array(
+			array(
+				'taxonomy' => $filtering_tax,
+				'field' => 'id',
+				'terms' => $include
+				
+			)
+			));   
         
-
- //  	$args = array( 'post_type' => $filtering_type, 'posts_per_page' => -1, 'orderby'=>$filtering_orderby , 'order'=> $filtering_order );
 		$filtering = new WP_Query( $args );
 	
       
@@ -645,14 +601,15 @@ class Filtering extends PageLinesSection {
         <?php
 
             while ($filtering->have_posts() ) : $filtering->the_post();
-            	if(ploption('filtering_show_excerpt', $this->oset)){
-			if($post->post_excerpt != ''){
+
+            	if($post->post_excerpt != ''){
 				$filtering_excerpt = $post->post_excerpt;
 			}else {
 				$filtering_excerpt = custom_trim_excerpt(apply_filters('the_content', $post->post_content), $filtering_excerpt_len ); 
 			}
-		}
-		else $filtering_excerpt = '';
+
+		
+
             	$terms = get_the_terms($post->ID , $filtering_tax );
 				$terms_string = '';
 		 		foreach ( $terms as $term ) :     
@@ -660,7 +617,7 @@ class Filtering extends PageLinesSection {
              	endforeach;   
 	
 		
-             	printf( '<div class="item %s " style="width: %s; margin-right: 10px;">' , $terms_string, $filtering_width);
+             	printf( '<div class="item %s " style="max-width: %s; margin-right: 10px;">' , $terms_string, $filtering_width);
 	
                
 	
@@ -672,30 +629,51 @@ class Filtering extends PageLinesSection {
 			<?php
 			
 	if($filtering_image != 'only_text')	{
-		$image = wp_get_attachment_image_src( get_post_thumbnail_id( $post->ID ), 'single-post-thumbnail' );
-
-	
- 		if ( $image ) {
- 			?>
 		
-		<a href="<?php the_permalink(); ?>" title="<?php the_title_attribute(); ?>"><?php the_post_thumbnail(); ?></a>
-	
-		<?php
-} else {
-
-
-		$image_src = plugins_url().'/pagelines-sections/filtering/images/no_thumb.png';
+		
+		
 		$permalink = get_permalink($post->ID);
 		$title = get_the_title($post->ID);
+		
+		
+			printf('<div class="filtering-image center">');
+		
 
-		printf('<a href="%s"><img src="%s" alt="%s" /></a>' , $permalink, $image_src,  $title);
+		$image = wp_get_attachment_url( get_post_thumbnail_id($post->ID) );
+		
+ 		if ( $image ) {
+ 			
+		
+		printf('<a href="%s"><img src="%s" alt="%s" style="max-width: %s; max-height: %s;"/></a>' , $permalink, $image,  $title, $image_width, $image_height);
+	
+		
+} else {
+
+		if($filtering_default) {
+		
+		
+		printf('<a href="%s"><img src="%s" alt="%s" style="max-width: %s; max-height: %s;"/></a>' , $permalink, $filtering_default,  $title, $image_width, $image_height);
+	
+		
+		
+		
+		
+
+	} else {
+		
+		
+	}
+
+	
  } 
 
-		
+	 ?>
+	</div>
+	<?php	
 	
 	 }
 
-	if($filtering_image != 'only_thumbs')	{
+	 if($filtering_image != 'only_thumbs')	{
 	?>
 		<div class="item-info">
 			<div class="item-title">
@@ -703,19 +681,56 @@ class Filtering extends PageLinesSection {
 			</div>
 
 	<?php
-		printf('<div class="item-excerpt">%s</div>', $filtering_excerpt );
+
+            	if($filtering_show_excerpt = true)
+            		
+            		printf('<div class="item-excerpt">%s</div>', $filtering_excerpt );
+			
+
+		
 	?>
 	</div>
-	<?php }
+	<?php
+	 }
 	?>
 	</div>
 	
 </div>
 	<?php
 	endwhile;
-	
+	 
 	?>
+	
 </div>
 <?php }
 
+	function attachment_image_size(){
+		global $post; 
+
+		$filtering_image_width = (ploption('filtering_image_width')) ? ploption('filtering_image_width') : " ";
+		$filtering_image_height = (ploption('filtering_image_height')) ? ploption('filtering_image_height') : " ";
+       	
+
+		$thumbnail_width = get_option( 'thumbnail_size_w' );
+		$thumbnail_height = get_option( 'thumbnail_size_h' );
+		
+		
+		 if(!$filtering_image_width) {
+		 	$image_height = $thumbnail_height;
+			$image_width = $thumbnail_width;
+			
+			
+		}
+		else  {
+			$image_width = $filtering_image_width;
+			$image_height = $filtering_image_height;
+			
+		}
+
+
+		$image_style = sprintf('style ="width: %spx; height: %spx;"' , $image_width, $image_height);
+		
+		
+		
+	}
 }		
