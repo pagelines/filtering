@@ -162,8 +162,6 @@ class Filtering extends PageLinesSection {
 								'inputlabel' => __( 'Image Display Option (default is Show Image on Top)', 'filtering'),				
 
 						),
-					 
-						
 						
 					),
 				),
@@ -492,6 +490,7 @@ class Filtering extends PageLinesSection {
 	echo '</div></div>';
 	
 	endwhile; // End post loop
+	wp_reset_query();
 	echo '</section>'; // End Filtering container
 
  }
@@ -608,7 +607,7 @@ class Filtering extends PageLinesSection {
            
         </nav>
 
-        <div class="filtering clearfix">
+        <section class="filtering clearfix">
         <?php
 
         // Start Filtering Container and Loop
@@ -694,8 +693,9 @@ class Filtering extends PageLinesSection {
 	echo '</div></div>';
 	
 	endwhile; // End loop
+	wp_reset_query();
 
-	echo '</div>';
+	echo '</section>';
  } // End Draw Taxonomy
 
 }		

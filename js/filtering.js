@@ -1,10 +1,7 @@
-jQuery(document).ready(function (){
-
-
+jQuery(window).load(function(){
 
 		jQuery(".item-info").equalizeCols(); // Make row heights equal
-		jQuery(".filtering-image").equalizeCols(); 
-
+		jQuery(".filtering-image").equalizeCols();
 		// Isotope Center Container
 
 	    jQuery.Isotope.prototype._getCenteredMasonryColumns = function() {
@@ -71,9 +68,9 @@ jQuery(document).ready(function (){
 	  	var mycontainer = jQuery('.filtering');
 
 	      // add randomish size classes
-	      mycontainer.find('.filtering .item').each(function(){
+	      mycontainer.find('.item').each(function(){
 	        var $this = jQuery(this),
-	            number = parseInt( $this.find('.item-info.item-title').text(), 10 );
+	            number = parseInt( $this.find('.item').text(), 10 );
 	        if ( number % 7 % 2 === 1 ) {
 	          $this.addClass('width2');
 	        }
@@ -87,6 +84,7 @@ jQuery(document).ready(function (){
 		      itemSelector: '.item' 
 		       
 		  });
+		  
 			
         
 	   // filter items when filter link is clicked
@@ -95,5 +93,6 @@ jQuery(document).ready(function (){
 	  mycontainer.isotope({ filter: selector });
 	  return false;  
 	  });
+ 
 
 });
