@@ -5,7 +5,7 @@
 	Author URI: http://www.elsue.com
 	Description: Filter your posts or custom post types by category or hierachal custom taxonomy
 	Class Name: Filtering
-	Cloning: true
+	Cloning: false
 	Workswith: content, template, main
 	Version: 1.0
 	Demo: http://pagelines.ellenjanemoore.com/accordions
@@ -35,8 +35,20 @@ class Filtering extends PageLinesSection {
 
 	function section_head( $clone_id ) {
 
-	
+		if(ploption( 'filtering_thumb_frame', $this->oset )) {
+		?>
+		<script>
+	 	jQuery(document).ready(function() {
+			jQuery('.filtering-image').addClass('pl-imageframe');
+
+		});
+		</script>
+		<?php
+		}
+
+
 	}
+
 
 	function section_optionator( $settings ){
 		
@@ -77,11 +89,13 @@ class Filtering extends PageLinesSection {
 				$exclude_taxonomies = array(
 	    			'box-sets',
 	    			'banner-sets',
-	    			'feature-sets'
+	    			'feature-sets',
+
 				);
 				// Builtin types needed.
 				$builtin = array(
 				    'category',
+				    'post_tag'
 				    
 				);
 				// All CPTs.
@@ -119,7 +133,7 @@ class Filtering extends PageLinesSection {
 					'exp'			=> __( '', 'filtering'),
 					'selectvalues'	=> array(
 						'filtering_post_type' => array(
-							'default'		=> 'posts',
+							'default'		=> 'post',
 							'type' 			=> 'select',
 							'selectvalues' 			=> $post_type_array,
 							'inputlabel'	=> __( 'Select your post type to filter', 'filtering'),
@@ -128,12 +142,12 @@ class Filtering extends PageLinesSection {
 							'default'		=> 'category',
 							'type' 			=> 'select',
 							'selectvalues' => $taxonomy_array,
-							'inputlabel'	=> __( 'Select taxonomy. Make sure the taxonomy goes with the post type, i.e. categories with posts', 'filtering'),
+							'inputlabel'	=> __( 'Select taxonomy. Make sure the taxonomy goes with the post type, i.e. category with posts', 'filtering'),
 						), 
 						'filtering_excludes' => array(
 							'default'		=> '',
 							'type' 			=> 'text',
-							'inputlabel'	=> __( 'Enter Excluded Categories or Terms  ( if multiple, separate using a comma )', 'filtering'),				
+							'inputlabel'	=> __( 'Enter Excluded Categories, Terms or Tags  ( if multiple, separate using a comma )', 'filtering'),				
 
 						),
 						
@@ -290,8 +304,7 @@ class Filtering extends PageLinesSection {
 		global $filtering;
         global $post; global $filtering_ID;
         $oset = array('post_id' => $filtering_ID, 'clone_id' => $clone_id);
-        $filtering_tax = ( ploption( 'filtering_taxonomy', $this->oset ) ) ? ploption( 'filtering_taxonomy', $this->oset ) : 'category';
-		$filtering_class = ( ploption( 'filtering_class', $this->oset ) ) ? ploption( 'filtering_class', $this->oset ) : null;
+        $filtering_class = ( ploption( 'filtering_class', $this->oset ) ) ? ploption( 'filtering_class', $this->oset ) : null;
 		
 
 		
@@ -315,8 +328,8 @@ class Filtering extends PageLinesSection {
 
         // Query Variables
 
-    	$filtering_type = ( ploption( 'filtering_post_type', $this->oset ) ) ? ploption( 'filtering_post_type', $this->oset ) : null;
-		$filtering_tax = ( ploption( 'filtering_taxonomy', $this->oset ) ) ? ploption( 'filtering_taxonomy', $this->oset ) : null;
+    	$filtering_type = ( ploption( 'filtering_post_type', $this->oset ) ) ? ploption( 'filtering_post_type', $this->oset ) : 'post';
+		$filtering_tax = ( ploption( 'filtering_taxonomy', $this->oset ) ) ? ploption( 'filtering_taxonomy', $this->oset ) : 'category';
 		$filtering_orderby = ( ploption( 'filtering_orderby', $this->oset ) ) ? ploption( 'filtering_orderby', $this->oset ) : 'ID';
 		$filtering_order = ( ploption( 'filtering_order', $this->oset ) ) ? ploption( 'filtering_order', $this->oset ) : 'DESC';
 		$filtering_excludes = ( ploption( 'filtering_excludes', $this->oset ) ) ? ploption( 'filtering_excludes', $this->oset ) : '';
@@ -380,26 +393,28 @@ class Filtering extends PageLinesSection {
 
         // Option Variables
 
-        $filtering_width = (ploption('filtering_item_width')) ? ploption('filtering_item_width').'px' : '250px';
-		$filtering_show_excerpt = (ploption('filtering_show_excerpt')) ? ploption('filtering_show_excerpt') : '' ;
-		$filtering_excerpt_len = (ploption('filtering_excerpt_length',$oset)) ? (ploption('filtering_excerpt_length',$oset)) : '20';
-        $filtering_all_phrase = (ploption('filtering_all_phrase',$oset)) ? (ploption('filtering_all_phrase',$oset)) : 'Show All';
-		$filtering_image = (ploption('filtering_image_type')) ? ploption('filtering_image_type') : 'images';
-       	$filtering_image_width = (ploption('filtering_image_width')) ? ploption('filtering_image_width') : '';
-		$filtering_image_height = (ploption('filtering_image_height')) ? ploption('filtering_image_height') : '';
+        $filtering_width = (ploption('filtering_item_width' , $this->oset)) ? ploption('filtering_item_width' , $this->oset).'px' : '250px';
+		$filtering_show_excerpt = (ploption('filtering_show_excerpt' , $this->oset)) ? ploption('filtering_show_excerpt' , $this->oset) : '' ;
+		$filtering_excerpt_len = (ploption('filtering_excerpt_length' , $this->oset)) ? (ploption('filtering_excerpt_length' , $this->oset)) : '20';
+        $filtering_all_phrase = (ploption('filtering_all_phrase', $this->oset)) ? (ploption('filtering_all_phrase', $this->oset)) : 'Show All';
+		$filtering_image = (ploption('filtering_image_type' , $this->oset)) ? ploption('filtering_image_type' , $this->oset) : 'images';
+       	$filtering_image_width = (ploption('filtering_image_width' , $this->oset)) ? ploption('filtering_image_width' , $this->oset) : '';
+		$filtering_image_height = (ploption('filtering_image_height' , $this->oset)) ? ploption('filtering_image_height' , $this->oset) : '';
        	$filtering_default =  ( ploption( 'filtering_default_image', $this->oset ) ) ? ploption( 'filtering_default_image', $this->oset ) : '' ;
        	$thumbnail_width = get_option( 'thumbnail_size_w' );
 		$thumbnail_height = get_option( 'thumbnail_size_h' );
 
 		// Set image width off settings or return thumbnail sizes
-		if(!$filtering_image_width) {
-		 	$image_height = $thumbnail_height . 'px';
-			$image_width = $thumbnail_width . 'px';	
-			
-		}
-		else  {
+		if((ploption('filtering_image_width' , $this->oset))) {
 			$image_width = $filtering_image_width . 'px';
 			$image_height = $filtering_image_height . 'px';
+		 	
+		}
+		else  {
+
+			$image_height = $thumbnail_height . 'px';
+			$image_width = $thumbnail_width . 'px';	
+			
 			
 		}
         
@@ -408,7 +423,7 @@ class Filtering extends PageLinesSection {
         ?>
 
         <nav class="filtering-nav-wrap">
-           <ul id="options" class="clearfix">
+           <ul class="options clearfix">
 				
 		<?php 
 			printf('<li><a href="#show-all" data-filter="*" class="selected">%s</a></li>' , $filtering_all_phrase);
@@ -431,13 +446,7 @@ class Filtering extends PageLinesSection {
 
         while ($filtering->have_posts() ) : $filtering->the_post();
 
-        	// Get post excerpt
-            	if($post->post_excerpt != ''){
-				$filtering_excerpt = $post->post_excerpt;
-			}else {
-				$filtering_excerpt = custom_trim_excerpt(apply_filters('the_content', $post->post_content), $filtering_excerpt_len ); 
-			}
-
+        	
 			// Get Post Terms
         	$terms = get_the_terms($post->ID , $filtering_tax );
 			$terms_string = '';
@@ -499,10 +508,17 @@ class Filtering extends PageLinesSection {
 
 		// Draw excerpt as long as true
 	
-    	if(ploption('filtering_show_excerpt', $this->oset)) 
+    	if(ploption('filtering_show_excerpt', $this->oset)) {
+    		// Get post excerpt
+            	if($post->post_excerpt != ''){
+				$filtering_excerpt = $post->post_excerpt;
+			}else {
+				$filtering_excerpt = custom_trim_excerpt(apply_filters('the_content', $post->post_content), $filtering_excerpt_len ); 
+			}
+
     		
     		printf('<div class="item-excerpt">%s</div>', $filtering_excerpt );
-    	
+    	}
 
 	echo '</div>';
 	

@@ -2,6 +2,12 @@ jQuery(window).load(function(){
 
 		jQuery(".item-info").equalizeCols(); // Make row heights equal
 		jQuery(".filtering-image").equalizeCols();
+
+		jQuery('.filtering-image').each(function() {
+        var container_height = jQuery(this).height()+'px';
+        jQuery(this).css('line-height', container_height);
+       
+    });
 		// Isotope Center Container
 
 	    jQuery.Isotope.prototype._getCenteredMasonryColumns = function() {
@@ -88,7 +94,7 @@ jQuery(window).load(function(){
 			
         
 	   // filter items when filter link is clicked
-	jQuery('#options a').click(function(){
+	jQuery('.options a').click(function(){
 	  var selector = jQuery(this).attr('data-filter');
 	  mycontainer.isotope({ filter: selector });
 	  return false;  
