@@ -81,7 +81,7 @@ class Filtering extends PageLinesSection {
 				);
 				// Builtin types needed.
 				$builtin = array(
-				    'categories',
+				    'category',
 				    
 				);
 				// All CPTs.
@@ -125,7 +125,7 @@ class Filtering extends PageLinesSection {
 							'inputlabel'	=> __( 'Select your post type to filter', 'filtering'),
 						), 
 						'filtering_taxonomy' => array(
-							'default'		=> 'categories',
+							'default'		=> 'category',
 							'type' 			=> 'select',
 							'selectvalues' => $taxonomy_array,
 							'inputlabel'	=> __( 'Select taxonomy. Make sure the taxonomy goes with the post type, i.e. categories with posts', 'filtering'),
@@ -175,7 +175,7 @@ class Filtering extends PageLinesSection {
 						'exp'		=> __('', 'filtering'),
 						'selectvalues'	=> array(
 							'filtering_show_excerpt' => array(
-									'default'		=> 0,
+									
 									'type' 			=> 'check',
 									'size'			=> 'small',
 									'inputlabel' 		=> __( 'Show the excerpt?', 'filtering'),
@@ -217,7 +217,7 @@ class Filtering extends PageLinesSection {
 							),
 							
 							'filtering_thumb_frame' => array(
-								'default'		=> 0,
+								'default'		=> '',
 								'type' 			=> 'check',
 								'size'			=> 'small',
 								'inputlabel' 		=> __( 'Add A Frame To Images', 'filtering'),
@@ -287,218 +287,28 @@ class Filtering extends PageLinesSection {
 	}
 
 	function section_template( $clone_id) {
-
+		global $filtering;
         global $post; global $filtering_ID;
         $oset = array('post_id' => $filtering_ID, 'clone_id' => $clone_id);
-        $filtering_tax = ( ploption( 'filtering_taxonomy', $this->oset ) ) ? ploption( 'filtering_taxonomy', $this->oset ) : null;
+        $filtering_tax = ( ploption( 'filtering_taxonomy', $this->oset ) ) ? ploption( 'filtering_taxonomy', $this->oset ) : 'category';
 		$filtering_class = ( ploption( 'filtering_class', $this->oset ) ) ? ploption( 'filtering_class', $this->oset ) : null;
 		
 
-		if($filtering_tax!='categories'){
+		
 			printf( '<div class="section-filtering %s">' , $filtering_class);
-				$this->draw_taxonomy_filtering();
+				$this->draw_filtering();
 				
 			echo '</div>';
-
-		}else {
-			printf( '<div class="section-filtering %s">' , $filtering_class);
-				$this->draw_category_filtering();
-			
-			echo '</div>';	
-		}
-        
-       
+ 
 
     }
   
     
-   	
-   	 // Draw Category Filtering
+    
 
-    function draw_category_filtering() {
+// Draw Filtering Container
 
-        global $post; 
-        global $filtering_ID;
-        $oset = array('post_id' => $filtering_ID);
-
-        // Query Variables
-        $filtering_orderby = ( ploption( 'filtering_orderby', $this->oset ) ) ? ploption( 'filtering_orderby', $this->oset ) : 'ID';
-		$filtering_order = ( ploption( 'filtering_order', $this->oset ) ) ? ploption( 'filtering_order', $this->oset ) : 'DESC';
-		$filtering_excludes = ( ploption( 'filtering_excludes', $this->oset ) ) ? ploption( 'filtering_excludes', $this->oset ) : '';
-        
-		// Convert Excluded Categories Names into IDs
-
-        $excludes = '';
-        if($filtering_excludes) {
-		 $exclude_cats = explode(", ", $filtering_excludes);
-			foreach ($exclude_cats as &$exclude_cat) {
-				 $cat_id = get_category_by_slug($exclude_cat);
-				 //Check to see if term exists
-				 $term = term_exists($exclude_cat, 'category'); 
-				 if ($term !== 0 && $term !== null) {
-  				$exclude_cat =$cat_id->term_id;
-  				} else {
-  					null;
-  				}
-
-			}
-
-			$excludes= implode(", ", $exclude_cats);
-		}
-		
-        
-        // Get categories except excluded categories                  
-        $categories = get_categories('exclude='.$excludes.' ');
-        
-      	// Create a list of included categories for filtering post query
-		$include = array();
-
-		foreach ( $categories as $category )
-		    $include[] = $category->term_id;
-
-		// Setup $filtering query
-        
-   		$args =  array( 'post_type' => 'post', 'posts_per_page' => -1, 'orderby'=>$filtering_orderby , 'order'=> $filtering_order, 'category__in' => $include );
-		$filtering = new WP_Query( $args );
-		
-      
-
-		// Option Variables
-        $filtering_width = (ploption('filtering_item_width')) ? ploption('filtering_item_width').'px' : '250px';
-		$filtering_image = (ploption('filtering_image_type')) ? ploption('filtering_image_type') : 'images';
-		$filtering_excerpt_len = (ploption('filtering_excerpt_length',$oset)) ? (ploption('filtering_excerpt_length',$oset)) : '150';
-        $filtering_all_phrase = (ploption('filtering_all_phrase',$oset)) ? (ploption('filtering_all_phrase',$oset)) : 'Show All';
-		$filtering_image_width = (ploption('filtering_image_width')) ? ploption('filtering_image_width') : '';
-		$filtering_image_height = (ploption('filtering_image_height')) ? ploption('filtering_image_height') : '';
-       	$filtering_default =  ( ploption( 'filtering_default_image', $this->oset ) ) ? ploption( 'filtering_default_image', $this->oset ) : '' ;
-       	$thumbnail_width = get_option( 'thumbnail_size_w' );
-		$thumbnail_height = get_option( 'thumbnail_size_h' );
-
-		// Set Image size or return thumbnail size
-		if(!$filtering_image_width) {
-		 	$image_height = $thumbnail_height . 'px';
-			$image_width = $thumbnail_width . 'px';
-			
-			
-		}
-		else  {
-			$image_width = $filtering_image_width . 'px';
-			$image_height = $filtering_image_height . 'px';
-			
-		}
-		
-
-		// Filtering Navigation
-        
-        ?>
-
-        <nav class="filtering-nav-wrap">
-           <ul id="options" class="clearfix">
-           		<?php 
-				printf('<li><a href="#show-all" data-filter="*" class="selected">%s</a></li>' , $filtering_all_phrase);
-
-	
-
-			foreach( $categories as $category ){ ?>
-
-		    	<li><a href="#" data-filter=".<?php echo $category->slug?>"><?php echo $category->name?></a></li>
-
-		    <?php } ?>
-
-			</ul>
-        </nav>
-
-        <section class="filtering clearfix">
-
-        <?php
-
-        // Start Filtering Container and Loop
-
-            while ($filtering->have_posts() ) : $filtering->the_post();
-
-            // Get the post excerpt
-
-            if($post->post_excerpt != ''){
-					$filtering_excerpt = $post->post_excerpt;
-				}else {
-					$filtering_excerpt = custom_trim_excerpt(apply_filters('the_content', $post->post_content), $filtering_excerpt_len ); 
-			}
-
-			// Get Post categories 
-
-            	$categories = get_the_category( $post->ID );
-				$categories_string = '';
-		 		foreach ( $categories as $category ) :     
-          			$categories_string = $categories_string.$category->slug.' '; 
-             	endforeach;   
-	
-		// Start drawing the item
-
-        printf( '<div class="item %s " style="width: %s; margin-right: 10px;">' , $categories_string, $filtering_width);
-			
-			echo '<div class="inner-item">';
-
-	
-			// Show image if not only_text	
-			if($filtering_image != 'only_text')	{
-
-				// Variables for image
-				$permalink = get_permalink($post->ID);
-				$title = get_the_title($post->ID);
-				$image = wp_get_attachment_url( get_post_thumbnail_id($post->ID) );
-
-				printf('<div class="filtering-image center">');
-				
-		 		if ( $image ) {
-		 
-					printf('<a href="%s"><img src="%s" alt="%s" style="max-width: %s; max-height: %s;"/></a>' , $permalink, $image,  $title, $image_width, $image_height);
-
-				} else {
-
-					if($filtering_default) {
-
-						printf('<a href="%s"><img src="%s" alt="%s" style="max-width: %s; max-height: %s;"/></a>' , $permalink, $filtering_default,  $title, $image_width, $image_height);
-				
-
-					} else {
-					
-						null;
-					}
-			 	} // End if ($image)
-
-			 	echo '</div>';
-
-			 } // End show image
-
-			 // Do if not only_images
-
-			if($filtering_image != 'only_images')	{
-			?>
-				<div class="item-info">
-					<div class="item-title">
-						<h4><a href="<?php the_permalink(); ?>" title="<?php the_title_attribute(); ?>"><?php the_title(); ?></a></h4>
-					</div>
-
-			<?php
-				// Show the Excerpt if true
-				if($filtering_show_excerpt = true)	
-
-		            printf('<div class="item-excerpt">%s</div>', $filtering_excerpt );
-
-				echo '</div>';
-
-			 	} // End Show Excerpt
-	
-	echo '</div></div>';
-	
-	endwhile; // End post loop
-	echo '</section>'; // End Filtering container
-
- }
-
-// Taxonomy items
-
-    function draw_taxonomy_filtering() {
+    function draw_filtering() {
     	global $post; 
         global $filtering_ID;
         $oset = array('post_id' => $filtering_ID);
@@ -534,9 +344,14 @@ class Filtering extends PageLinesSection {
         }
       
       // Get Terms
-      $args2 = array('exclude'=>$excludes);	
-	  $terms = get_terms($filtering_tax, $args2);
+    $args2 = array('exclude'=>$excludes);
 
+      // Check to see if category or other taxonomy
+    if($filtering_tax != 'category')	{
+	  $terms = get_terms($filtering_tax, $args2);
+		} else {
+	  $terms = get_categories('exclude='.$excludes.' ');
+	}
 	  // Get terms to include in $filtering query
       $include = array();
 
@@ -561,11 +376,12 @@ class Filtering extends PageLinesSection {
 
         // Filtering Query
 		$filtering = new WP_Query( $args );
+		
 
         // Option Variables
 
         $filtering_width = (ploption('filtering_item_width')) ? ploption('filtering_item_width').'px' : '250px';
-		$filtering_show_excerpt = (ploption('filtering_show_excerpt')) ? ploption('filtering_show_excerpt') : null;
+		$filtering_show_excerpt = (ploption('filtering_show_excerpt')) ? ploption('filtering_show_excerpt') : '' ;
 		$filtering_excerpt_len = (ploption('filtering_excerpt_length',$oset)) ? (ploption('filtering_excerpt_length',$oset)) : '20';
         $filtering_all_phrase = (ploption('filtering_all_phrase',$oset)) ? (ploption('filtering_all_phrase',$oset)) : 'Show All';
 		$filtering_image = (ploption('filtering_image_type')) ? ploption('filtering_image_type') : 'images';
@@ -630,7 +446,7 @@ class Filtering extends PageLinesSection {
          	endforeach;   
 
 			// Start Drawing Item
-         	printf( '<div class="item %s " style="max-width: %s; margin-right: 10px;">' , $terms_string, $filtering_width);
+         	printf( '<div class="item %s " style="width: %s; margin-right: 10px;">' , $terms_string, $filtering_width);
 
 			echo '<div class="inner-item">';
 
@@ -682,10 +498,11 @@ class Filtering extends PageLinesSection {
 	<?php
 
 		// Draw excerpt as long as true
-
-    	if($filtering_show_excerpt = true)
+	
+    	if(ploption('filtering_show_excerpt', $this->oset)) 
     		
     		printf('<div class="item-excerpt">%s</div>', $filtering_excerpt );
+    	
 
 	echo '</div>';
 	

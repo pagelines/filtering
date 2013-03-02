@@ -70,7 +70,7 @@ jQuery(window).load(function(){
 	      // add randomish size classes
 	      mycontainer.find('.item').each(function(){
 	        var $this = jQuery(this),
-	            number = parseInt( $this.find('.item').text(), 10 );
+	            number = parseInt( $this.find('.item-title').text(), 10 );
 	        if ( number % 7 % 2 === 1 ) {
 	          $this.addClass('width2');
 	        }
