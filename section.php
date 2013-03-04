@@ -8,7 +8,7 @@
 	Cloning: false
 	Workswith: content, template, main
 	Version: 1.0
-	Demo: http://pagelines.ellenjanemoore.com/accordions
+	Demo: http://pagelines.ellenjanemoore.com/filtering-demo/
 	
 */
 
@@ -26,14 +26,34 @@ class Filtering extends PageLinesSection {
 	*/
 	function section_styles(){
 		
-		wp_enqueue_script( 'isotope', $this->base_url.'/js/jquery.isotope.min.js', array('jquery'));
+		wp_enqueue_script( 'isotope', $this->base_url.'/js/jquery.isotope.min.js');
 		wp_enqueue_script( 'filtering', $this->base_url.'/js/filtering.js');
 		wp_enqueue_script( 'equalize', $this->base_url.'/js/equalizecols.js');
 		wp_enqueue_script( 'easing', $this->base_url.'/js/jquery.easing.js');
 		
 		}
 
-	function section_head( $clone_id ) {
+	function section_head() {
+	
+		?>
+		<script>
+		
+		jQuery(window).load(function(){
+		jQuery(".filtering-image").equalizeCols(); // Make image container equal
+		jQuery(".item-info").equalizeCols(); // Make row heights equal
+		
+		
+		jQuery('.filtering-image').each(function() {
+	        var container_height = jQuery(this).height()+'px';
+	        jQuery(this).css('line-height', container_height);
+       
+    	});
+
+		
+});
+</script>
+<?php
+
 
 		if(ploption( 'filtering_thumb_frame', $this->oset )) {
 		?>
@@ -45,9 +65,9 @@ class Filtering extends PageLinesSection {
 		</script>
 		<?php
 		}
-
-
+		
 	}
+
 
 
 	function section_optionator( $settings ){
@@ -136,13 +156,13 @@ class Filtering extends PageLinesSection {
 							'default'		=> 'post',
 							'type' 			=> 'select',
 							'selectvalues' 			=> $post_type_array,
-							'inputlabel'	=> __( 'Select your post type to filter', 'filtering'),
+							'inputlabel'	=> __( 'Select your post type to filter. Default is "post."', 'filtering'),
 						), 
 						'filtering_taxonomy' => array(
 							'default'		=> 'category',
 							'type' 			=> 'select',
 							'selectvalues' => $taxonomy_array,
-							'inputlabel'	=> __( 'Select taxonomy. Make sure the taxonomy goes with the post type, i.e. category with posts', 'filtering'),
+							'inputlabel'	=> __( 'Select taxonomy. Make sure the taxonomy goes with the post type, i.e. category with posts. Default is "category"', 'filtering'),
 						), 
 						'filtering_excludes' => array(
 							'default'		=> '',
@@ -150,12 +170,24 @@ class Filtering extends PageLinesSection {
 							'inputlabel'	=> __( 'Enter Excluded Categories, Terms or Tags  ( if multiple, separate using a comma )', 'filtering'),				
 
 						),
+						'filtering_includes' => array(
+							'default'		=> '',
+							'type' 			=> 'text',
+							'inputlabel'	=> __( 'Enter Categories, Terms or Tags to Include  ( if multiple, separate using a comma )', 'filtering'),				
+
+						),
+						'filtering_number' => array(
+							
+							'type' 			=> 'text_small',
+							'inputlabel'	=> __( 'Number of posts to show. If left blank no pagination will occur, all posts will display based on post type and taxonomy chosen.', 'filtering'),				
+
+						),
 						
 						'filtering_item_width' => array(
 							'type' 			=> 'text_small',
 							'default'		=> '250px',
 							
-							'inputlabel' 		=> __( 'Width of  each item item. Default is 250px. Enter just the width value, px will be added for you.' , 'filtering'),
+							'inputlabel' 		=> __( 'Width of  each item item. Default is "250px". Enter just the width value, px will be added for you.' , 'filtering'),
 						),
 						'filtering_all_phrase' => array(
 							'type' 			=> 'text',
@@ -173,7 +205,7 @@ class Filtering extends PageLinesSection {
 										'only_text'	=> array('name' => __( "Text Only, no image", 'filtering') )
 
 									), 
-								'inputlabel' => __( 'Image Display Option (default is Show Image on Top)', 'filtering'),				
+								'inputlabel' => __( 'Image Display Option (default is "Show Image on Top")', 'filtering'),				
 
 						),
 					 
@@ -215,7 +247,7 @@ class Filtering extends PageLinesSection {
 								'default'		=> '',
 								'type' 			=> 'text_small',
 								
-								'inputlabel' 		=> __( 'Maximum Image Width', 'filtering'),
+								'inputlabel' 		=> __( 'Maximum Image Width.', 'filtering'),
 							),
 							'filtering_image_height' => array(
 								'default'		=> '',
@@ -277,13 +309,13 @@ class Filtering extends PageLinesSection {
 					'filtering_styles' => array(
 						'type'		=> 'multi_option', 
 						'title' 		=> __( 'Custom CSS class', 'filtering'),
-						'shortexp' 		=> __( 'Add a custom CSS class to this set of boxes.', 'filtering'),
+						'shortexp' 		=> __( 'Add a custom CSS class to this Filtering Section.', 'filtering'),
 						'selectvalues'	=> array(
 							'filtering_class' => array(
 								'default'		=> '',
 								'type' 			=> 'text',
 								'size'			=> 'small',
-								'inputlabel' 	=> __( 'Add custom css class to these boxes (Hint: try "custom1" with "thumbs on top" mode)', 'filtering'),
+								'inputlabel' 	=> __( 'Add custom css class to this Filtering Section. Try "custom-style" for different navigation style.', 'filtering'),
 								),
 							),
 						),
@@ -300,10 +332,10 @@ class Filtering extends PageLinesSection {
 			register_metatab($metatab_settings, $metatab_array);
 	}
 
-	function section_template( $clone_id) {
+	function section_template() {
 		global $filtering;
         global $post; global $filtering_ID;
-        $oset = array('post_id' => $filtering_ID, 'clone_id' => $clone_id);
+        $oset = array('post_id' => $filtering_ID);
         $filtering_class = ( ploption( 'filtering_class', $this->oset ) ) ? ploption( 'filtering_class', $this->oset ) : null;
 		
 
@@ -322,6 +354,7 @@ class Filtering extends PageLinesSection {
 // Draw Filtering Container
 
     function draw_filtering() {
+    	global $wp_query;
     	global $post; 
         global $filtering_ID;
         $oset = array('post_id' => $filtering_ID);
@@ -333,7 +366,15 @@ class Filtering extends PageLinesSection {
 		$filtering_orderby = ( ploption( 'filtering_orderby', $this->oset ) ) ? ploption( 'filtering_orderby', $this->oset ) : 'ID';
 		$filtering_order = ( ploption( 'filtering_order', $this->oset ) ) ? ploption( 'filtering_order', $this->oset ) : 'DESC';
 		$filtering_excludes = ( ploption( 'filtering_excludes', $this->oset ) ) ? ploption( 'filtering_excludes', $this->oset ) : '';
+      	$filtering_includes = ( ploption( 'filtering_includes', $this->oset ) ) ? ploption( 'filtering_includes', $this->oset ) : '';
+      	$filtering_number = ( ploption( 'filtering_number', $this->oset ) ) ? ploption( 'filtering_number', $this->oset ) : null;
       
+      	if(ploption( 'filtering_number', $this->oset ) ) {
+      		$filtering_item_number = $filtering_number;
+
+      	} else {
+      		$filtering_item_number = -1;
+      	}
       	// Setup Query Terms
 
 		// Convert Excluded Terms Names into IDs
@@ -355,9 +396,29 @@ class Filtering extends PageLinesSection {
             $excludes= implode(", ", $exclude_term_array); 
 
         }
+
+        // Convert Excluded Terms Names into IDs
+      	$includes = '';
+        if($filtering_includes) {
+         $include_terms = explode(", ", $filtering_includes);
+            foreach ($include_terms as $include_term) {
+                $term = get_term_by( 'name',  $include_term,  $filtering_tax  );
+                // Check to see if term exists in Taxonomy
+                $included = term_exists($include_term, $filtering_tax);
+                
+                if ($included !== 0 && $included !== null) {
+                 $include_term_array[] = $term->term_id;         
+             } else {
+             	$include_term_array[] = '';
+             }
+            }
+
+            $includes = implode(", ", $include_term_array); 
+
+        }
       
       // Get Terms
-    $args2 = array('exclude'=>$excludes);
+    $args2 = array('exclude'=>$excludes, 'include'=>$includes);
 
       // Check to see if category or other taxonomy
     if($filtering_tax != 'category')	{
@@ -371,12 +432,15 @@ class Filtering extends PageLinesSection {
 		foreach ( $terms as $term )
 		    $include[] = $term->term_id;
 
+		$paged = (get_query_var('paged')) ? get_query_var('paged') : 1;
+
 	// Query arguments
 	 $args = array(
 	 	'post_type' => $filtering_type,
-	 	'posts_per_page' => -1,
+	 	'posts_per_page' => $filtering_item_number,
 	 	'orderby'=>$filtering_orderby ,
 	 	'order'=> $filtering_order,
+	 	'paged' => $paged,
 	 	
 	 	'tax_query' => array(
 			array(
@@ -471,9 +535,17 @@ class Filtering extends PageLinesSection {
 				
 				// If has featured image
 		 		if ( $image ) {
+
+		 			if((ploption('filtering_image_width' , $this->oset))) {
 				
 					printf('<a href="%s"><img src="%s" alt="%s" style="max-width: %s; max-height: %s;"/></a>' , $permalink, $image,  $title, $image_width, $image_height);			
-				
+					} else {
+							?>
+		
+		<a href="<?php the_permalink(); ?>" title="<?php the_title_attribute(); ?>"><?php the_post_thumbnail('thumbnail'); ?></a>
+	
+		<?php
+					}
 				} else {
 
 					// If uploaded a default image
@@ -525,10 +597,41 @@ class Filtering extends PageLinesSection {
 	 } // End Draw Title and Excerpt
 	
 	echo '</div></div>';
+
+
 	
 	endwhile; // End loop
 
+
+
 	echo '</div>';
+
+
+
+	$total_pages = $filtering->max_num_pages;
+ 
+if ($total_pages > 1){
+ 
+$current_page = max(1, get_query_var('paged'));
+ 
+echo '<div class="pagination pagination-centered">';
+ 
+echo paginate_links(array(
+'base' => get_pagenum_link(1) . '%_%',
+'format' => '/page/%#%',
+'current' => $current_page,
+'total' => $total_pages,
+'type' => 'list',
+'prev_text' => 'Prev',
+'next_text' => 'Next'
+));
+ 
+echo '</div>';
+
+}
+
+
  } // End Draw Taxonomy
+
 
 }		
