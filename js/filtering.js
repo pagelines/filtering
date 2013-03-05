@@ -1,6 +1,6 @@
 jQuery(document).ready(function(){
 
-	
+
 		// Isotope Center Container
 
 	    jQuery.Isotope.prototype._getCenteredMasonryColumns = function() {
@@ -69,7 +69,7 @@ jQuery(document).ready(function(){
 	      // add randomish size classes
 	      mycontainer.find('.item').each(function(){
 	        var $this = jQuery(this),
-	            number = parseInt( $this.find('.item-title').text(), 10 );
+	            number = parseInt( $this.find('.item-excerpt').text(), 10 );
 	        if ( number % 7 % 2 === 1 ) {
 	          $this.addClass('width2');
 	        }
@@ -78,12 +78,15 @@ jQuery(document).ready(function(){
 	        }
 	      });
 
-		mycontainer.imagesLoaded( function(){
-	      mycontainer.isotope({
-		      itemSelector: '.item' 
-		       
-		  });
-		  });
+	     
+	       mycontainer.isotope({
+     			itemSelector: '.item',
+     			
+  		}).imagesLoaded( function() {
+    	// trigger again after images have loaded
+    		mycontainer.isotope('reLayout');
+  		});
+		
 		  
 			
         
