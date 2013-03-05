@@ -167,37 +167,36 @@ class Filtering extends PageLinesSection {
 						), 
 					  ), 
 					), 
-					'filtering_terms' => array(
+					'filtering_terms_options' => array(
 					'type'		=> 'multi_option', 
 					'title'		=> __('Enter Categories, Terms or Tags to Exclude or Include', 'filtering'), 
 					'shortexp'	=> __('Use this area to either Exclude or Include Categories, Terms or Tags (Not both). If your category or term has children you can exclude/include those as well.', 'filtering'),
 					'exp'			=> __( '', 'filtering'),
 					'selectvalues'	=> array(
-						'filtering_excludes' => array(
+						'filtering_terms' => array(
 							'default'		=> '',
 							'type' 			=> 'text',
 							'inputlabel'	=> __( 'Enter Excluded Categories, Terms or Tags  ( if multiple, separate using a comma )', 'filtering'),				
 
 						),
-						'filtering_children_exclude' => array(
-									
-									'type' 			=> 'check',
-									'size'			=> 'small',
-									'inputlabel' 		=> __( 'Exclude Child Categories or Terms Too?', 'filtering'),
-								),
-						'filtering_includes' => array(
-							'default'		=> '',
-							'type' 			=> 'text',
-							'inputlabel'	=> __( 'Enter Categories, Terms or Tags to Include  ( if multiple, separate using a comma )', 'filtering'),				
 
-						),
-						'filtering_children_include' => array(
-									
+						'filtering_terms_type' => array(
+									'type' 		=> 'select',
+								'default'	=> 'exclude',
+								'selectvalues'	=> array(
+										'exclude'	=> array('name' => __( 'Exclude (Default)', 'filtering') ), 
+										'include'	=> array('name' => __( "Include", 'filtering') ),
+										), 
+								'inputlabel' => __( 'Exclude or Include these categories, terms or tags?")', 'filtering'),				
+),
+							
+						'filtering_children' => array(
+									'default'		=>	null,
 									'type' 			=> 'check',
 									'size'			=> 'small',
-									'inputlabel' 		=> __( 'Include Child Categories or Terms Too?', 'filtering'),
+									'inputlabel' 		=> __( 'Exclude Child Categories/Terms?', 'filtering'),
 								),
-									
+								
 						
 					),
 				),		
@@ -252,7 +251,7 @@ class Filtering extends PageLinesSection {
 						'exp'		=> __('', 'filtering'),
 						'selectvalues'	=> array(
 							'filtering_show_excerpt' => array(
-									
+									'default'		=> null,
 									'type' 			=> 'check',
 									'size'			=> 'small',
 									'inputlabel' 		=> __( 'Show the excerpt?', 'filtering'),
@@ -396,8 +395,8 @@ class Filtering extends PageLinesSection {
 		$filtering_tax = ( ploption( 'filtering_taxonomy', $this->oset ) ) ? ploption( 'filtering_taxonomy', $this->oset ) : 'category';
 		$filtering_orderby = ( ploption( 'filtering_orderby', $this->oset ) ) ? ploption( 'filtering_orderby', $this->oset ) : 'ID';
 		$filtering_order = ( ploption( 'filtering_order', $this->oset ) ) ? ploption( 'filtering_order', $this->oset ) : 'DESC';
-		$filtering_excludes = ( ploption( 'filtering_excludes', $this->oset ) ) ? ploption( 'filtering_excludes', $this->oset ) : '';
-      	$filtering_includes = ( ploption( 'filtering_includes', $this->oset ) ) ? ploption( 'filtering_includes', $this->oset ) : '';
+		$filtering_terms = ( ploption( 'filtering_terms', $this->oset ) ) ? ploption( 'filtering_terms', $this->oset ) : '';
+      	$filtering_terms_type = ( ploption( 'filtering_terms_type', $this->oset ) ) ? ploption( 'filtering_terms_type', $this->oset ) : 'exclude';
       	$filtering_number = ( ploption( 'filtering_number', $this->oset ) ) ? ploption( 'filtering_number', $this->oset ) : null;
       
       	if(ploption( 'filtering_number', $this->oset ) ) {
@@ -408,103 +407,59 @@ class Filtering extends PageLinesSection {
       	}
       	// Setup Query Terms
 
-		// Get Terms to exclude and term arguments
+		// Get Terms
       	
-        if($filtering_excludes) {
-        $excludes = '';
-      	$excludes_children = '';
-      	$childterm = null;	
-         $exclude_terms = explode(", ", $filtering_excludes);
-            foreach ($exclude_terms as $exclude_term) {
-                $term = get_term_by( 'name',  $exclude_term,  $filtering_tax  );
-                $termchildren = get_term_children( $term->term_id, $filtering_tax );
-                // Get Children of Term
-                if ($termchildren !== 0 && $termchildren !== null) {
-                	foreach($termchildren as $termchild) {
-                		$childterm[] = $termchild;
-                	}
-            }
-                
-                // Check to see if term exists in Taxonomy
-                $exclude = term_exists($exclude_term, $filtering_tax);
-                
-                if ($exclude !== 0 && $exclude !== null) {
-                 $exclude_term_array[] = $term->term_id;         
-             } else {
-             	$exclude_term_array[] = '';
-             }
-            }
-
-            $excludes= implode(", ", $exclude_term_array); 
-          
-            
-            // See if want child terms in query too
-            if(ploption('filtering_children_exclude', $this->oset )) {
-            	if($childterm !== null) {
-            	$excludes_children= implode(", ", $childterm);
-            }else {
-            	$excludes_children = '';
-            }
-            $exclude_these_terms = $excludes . ', ' . $excludes_children;
-        } else {
-        	$exclude_these_terms = $excludes;
-        }
-            $args2 = array('exclude'=>$exclude_these_terms);
-
-        }
-
-        // Get Terms to Include and Term Arguments
-      	
-        elseif($filtering_includes) {
-        	$includes = '';
-        $childterm = null;	
-      	$includes_children = '';
-         $include_terms = explode(", ", $filtering_includes);
-            foreach ($include_terms as $include_term) {
-                $term = get_term_by( 'name',  $include_term,  $filtering_tax  );
-                $termchildren = get_term_children( $term->term_id, $filtering_tax );
+        if($filtering_terms) {
+        	$terms_list = '';
+      		$terms_children = '';
+      		$childterm = null;	
+         	$filter_terms = explode(", ", $filtering_terms);
+            foreach ($filter_terms as $filter_term) {
+                $term = get_term_by( 'name',  $filter_term,  $filtering_tax  );
+                 $termchildren = get_term_children( $term->term_id, $filtering_tax );
                     // Get Children of Term
                 if ($termchildren !== 0 && $termchildren !== null) {
-                foreach($termchildren as $termchild) {
-                	$childterm[] = $termchild;
-                }
-            }
-              
+	                foreach($termchildren as $termchild) {
+	                	$childterm[] = $termchild;
+	                }
+	            }
                 // Check to see if term exists in Taxonomy
-                $included = term_exists($include_term, $filtering_tax);
-                
-                if ($included !== 0 && $included !== null) {
-                 $include_term_array[] = $term->term_id;
-
-             } else {
-             	$include_term_array[] = '';
-             }
-             
-            }
-
-            $includes = implode(", ", $include_term_array);
-            
-            if(ploption('filtering_children_include', $this->oset)) {
+                $filtering_check = term_exists($filter_term, $filtering_tax);
+                if ($filtering_check !== 0 && $filtering_check !== null) {
+                 	$term_array[] = $term->term_id;         
+             	} else {
+             		$term_array[] = '';
+             	}
+            	$terms_list= implode(", ", $term_array); 
+            // See if want child terms in query too
+            if(ploption('filtering_children', $this->oset )) {
             	if($childterm !== null) {
-            	$includes_children = implode(", ", $childterm);
-            }else {
-            	$includes_children = '';
-            }
-            	
-            $include_these_terms = $includes . ',' . $include_child; 
-        } else {
-        	$include_these_terms = $includes; 
-        }
-            $args2 = array('include'=>$include_these_terms);
-        }
-        
-        else {
+            	$terms_children= implode(", ", $childterm);
+            	}else {
+            	$terms_children = '';
+            	}
+          		$these_terms = $terms_list . ',' . $terms_children; 
+        	} else {
+        		$these_terms = $terms_list; 
+        	}
         	
-        	$args2 = null;
-        }
-      
-      // Get Terms
+        }// See if terms are to be excluded or included
+        	if($filtering_terms_type != 'exclude'){
+            	$args2 = array('include'=>$these_terms);
+        	} else {
+        		$args2 = array('exclude'=>$these_terms);
+        	}
 
+	    } else {
+	    	if(ploption('filtering_children', $this->oset )) {
+	    		$args2 = array('parent'=>0);
+	    	} else {
+	    		$args2 = null;
+	    	}
+
+	    }
+
+       
    
 	  $terms = get_terms($filtering_tax, $args2);
 
@@ -515,7 +470,7 @@ class Filtering extends PageLinesSection {
 		foreach ( $terms as $term )
 		    $include[] = $term->term_id;
 
-	if(ploption('filtering_children_include', $this->oset)) {
+	if(ploption('filtering_children', $this->oset)) {
 		$include_children = true;
 		}else {
 			$include_children = false;
