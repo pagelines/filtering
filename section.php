@@ -27,7 +27,6 @@ class Filtering extends PageLinesSection {
 	function section_styles(){
 		
 		wp_enqueue_script( 'isotope', $this->base_url.'/js/jquery.isotope.min.js');
-		wp_enqueue_script( 'infinite-scroll', $this->base_url.'/js/jquery.infinitescroll.min.js');
 		wp_enqueue_script( 'filtering', $this->base_url.'/js/filtering.js');
 		wp_enqueue_script( 'equalize', $this->base_url.'/js/equalizecols.js');
 		wp_enqueue_script( 'easing', $this->base_url.'/js/jquery.easing.js');
@@ -166,6 +165,14 @@ class Filtering extends PageLinesSection {
 							'selectvalues' => $taxonomy_array,
 							'inputlabel'	=> __( 'Select taxonomy. Make sure the taxonomy goes with the post type, i.e. category with posts. Default is "category"', 'filtering'),
 						), 
+					  ), 
+					), 
+					'filtering_terms' => array(
+					'type'		=> 'multi_option', 
+					'title'		=> __('Enter Categories, Terms or Tags to Exclude or Include', 'filtering'), 
+					'shortexp'	=> __('Use this area to either Exclude or Include Categories, Terms or Tags (Not both). If your category or term has children you can exclude/include those as well.', 'filtering'),
+					'exp'			=> __( '', 'filtering'),
+					'selectvalues'	=> array(
 						'filtering_excludes' => array(
 							'default'		=> '',
 							'type' 			=> 'text',
@@ -300,15 +307,15 @@ class Filtering extends PageLinesSection {
 					
 					'filtering_ordering' => array(
 						'type'		=> 'multi_option', 
-						'title'		=> __('Box Ordering Options', 'filtering'), 
-						'shortexp'	=> __('Optionally control the ordering of the boxes', 'filtering'),
-						'exp'		=> __('The easiest way to order boxes is using a post type order plugin for WordPress. However, if you would like to do it algorithmically, we have provided these options for you.', 'filtering'),
+						'title'		=> __('Post Ordering Options', 'filtering'), 
+						'shortexp'	=> __('Optionally control the ordering of the your posts', 'filtering'),
+						'exp'		=> __('Posts are ordered by ID by default.  Use the option below to change the post order.  Another way to order posts is using a post type order plugin for WordPress.', 'filtering'),
 						'selectvalues'	=> array(
 							
 							'filtering_orderby' => array(
 								'type'			=> 'select',
 								'default'		=> 'ID',
-								'inputlabel'	=> 'Order Boxes By (If Not With Post Type Order Plugin)',
+								'inputlabel'	=> 'Order Posts By (If Not With Post Type Order Plugin)',
 								'selectvalues' => array(
 									'ID' 		=> array('name' => __( 'Post ID (default)', 'filtering') ),
 									'title' 	=> array('name' => __( 'Title', 'filtering') ),
@@ -321,7 +328,7 @@ class Filtering extends PageLinesSection {
 									'default' => 'DESC',
 									'type' => 'select',
 									'selectvalues' => array(
-										'DESC' 		=> array('name' => __( 'Descending', 'filtering') ),
+										'DESC' 		=> array('name' => __( 'Descending (default)', 'filtering') ),
 										'ASC' 		=> array('name' => __( 'Ascending', 'filtering') ),
 									),
 									'inputlabel'=> __( 'Select sort order', 'filtering'),
@@ -405,18 +412,17 @@ class Filtering extends PageLinesSection {
       	
         if($filtering_excludes) {
         $excludes = '';
-      	$excludes_children = '';	
+      	$excludes_children = '';
+      	$childterm = null;	
          $exclude_terms = explode(", ", $filtering_excludes);
             foreach ($exclude_terms as $exclude_term) {
                 $term = get_term_by( 'name',  $exclude_term,  $filtering_tax  );
                 $termchildren = get_term_children( $term->term_id, $filtering_tax );
                 // Get Children of Term
                 if ($termchildren !== 0 && $termchildren !== null) {
-                foreach($termchildren as $termchild) {
-                	$childterm[] = $termchild;
-                }
-            } else {
-            	$childterm[] = null;
+                	foreach($termchildren as $termchild) {
+                		$childterm[] = $termchild;
+                	}
             }
                 
                 // Check to see if term exists in Taxonomy
@@ -431,10 +437,15 @@ class Filtering extends PageLinesSection {
 
             $excludes= implode(", ", $exclude_term_array); 
           
-            $child_excludes= implode(", ", $childterm);
+            
             // See if want child terms in query too
-            if(ploption('filtering_children_exclude', $this->oset)) {
-            $exclude_these_terms = $excludes . ', ' . $child_excludes;
+            if(ploption('filtering_children_exclude', $this->oset )) {
+            	if($childterm !== null) {
+            	$excludes_children= implode(", ", $childterm);
+            }else {
+            	$excludes_children = '';
+            }
+            $exclude_these_terms = $excludes . ', ' . $excludes_children;
         } else {
         	$exclude_these_terms = $excludes;
         }
@@ -446,6 +457,7 @@ class Filtering extends PageLinesSection {
       	
         elseif($filtering_includes) {
         	$includes = '';
+        $childterm = null;	
       	$includes_children = '';
          $include_terms = explode(", ", $filtering_includes);
             foreach ($include_terms as $include_term) {
@@ -456,8 +468,6 @@ class Filtering extends PageLinesSection {
                 foreach($termchildren as $termchild) {
                 	$childterm[] = $termchild;
                 }
-            } else {
-            	$childterm[] = null;
             }
               
                 // Check to see if term exists in Taxonomy
@@ -473,8 +483,14 @@ class Filtering extends PageLinesSection {
             }
 
             $includes = implode(", ", $include_term_array);
-            $include_child = implode(", ", $childterm);
+            
             if(ploption('filtering_children_include', $this->oset)) {
+            	if($childterm !== null) {
+            	$includes_children = implode(", ", $childterm);
+            }else {
+            	$includes_children = '';
+            }
+            	
             $include_these_terms = $includes . ',' . $include_child; 
         } else {
         	$include_these_terms = $includes; 
@@ -483,6 +499,7 @@ class Filtering extends PageLinesSection {
         }
         
         else {
+        	
         	$args2 = null;
         }
       
@@ -683,21 +700,21 @@ class Filtering extends PageLinesSection {
 
 	$total_pages = $filtering->max_num_pages;
  
-if ($total_pages > 1){
- 
-$current_page = max(1, get_query_var('paged'));
- 
-echo '<div class="pagination pagination-centered">';
- 
-echo paginate_links(array(
-'base' => get_pagenum_link(1) . '%_%',
-'format' => '/page/%#%',
-'current' => $current_page,
-'total' => $total_pages,
-'type' => 'list',
-'prev_text' => 'Prev',
-'next_text' => 'Next'
-));
+		if ($total_pages > 1){
+		 
+		$current_page = max(1, get_query_var('paged'));
+		 
+		echo '<div class="pagination pagination-centered">';
+		 
+		echo paginate_links(array(
+			'base' => get_pagenum_link(1) . '%_%',
+			'format' => '/page/%#%',
+			'current' => $current_page,
+			'total' => $total_pages,
+			'type' => 'list',
+			'prev_text' => 'Prev',
+			'next_text' => 'Next'
+		));
  
 echo '</div>';
 
