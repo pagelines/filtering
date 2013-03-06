@@ -1,5 +1,7 @@
 jQuery(document).ready(function(){
-
+	jQuery(".filtering-image").equalizeCols();
+			jQuery(".item-info").equalizeCols(); 
+		 
 
 		// Isotope Center Container
 
@@ -81,6 +83,7 @@ jQuery(document).ready(function(){
 	     
 	       mycontainer.isotope({
      			itemSelector: '.item',
+     			layoutMode: 'masonry'
      			
   		}).imagesLoaded( function() {
     	// trigger again after images have loaded
