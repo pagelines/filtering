@@ -37,10 +37,9 @@ class Filtering extends PageLinesSection {
 	
 		?>
 		<script>
-		// Make Rows Equal Heights
+		
 		jQuery(document).ready(function(){
-			jQuery(".filtering-image").equalizeCols();
-			jQuery(".item-info").equalizeCols(); 
+			
 		
 			// Get image height to vertically align image to bottom
 			jQuery('.filtering-image').each(function() {
