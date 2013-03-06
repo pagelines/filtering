@@ -170,7 +170,7 @@ class Filtering extends PageLinesSection {
 						'filtering_terms' => array(
 							'default'		=> '',
 							'type' 			=> 'text',
-							'inputlabel'	=> __( 'Enter Excluded Categories, Terms or Tags  ( if multiple, separate using a comma )', 'filtering'),				
+							'inputlabel'	=> __( 'Enter Categories, Terms or Tags  ( if multiple, separate using a comma )', 'filtering'),				
 
 						),
 
@@ -181,7 +181,7 @@ class Filtering extends PageLinesSection {
 										'exclude'	=> array('name' => __( 'Exclude (Default)', 'filtering') ), 
 										'include'	=> array('name' => __( "Include", 'filtering') ),
 										), 
-								'inputlabel' => __( 'Exclude or Include these categories, terms or tags?")', 'filtering'),				
+								'inputlabel' => __( 'Exclude or Include these categories, terms or tags? Default is "Exclude."', 'filtering'),				
 							),
 							
 						'filtering_children' => array(
