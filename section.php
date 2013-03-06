@@ -37,15 +37,15 @@ class Filtering extends PageLinesSection {
 	
 		?>
 		<script>
+		// Make Rows Equal Heights
+		jQuery(document).ready(function(){
+			jQuery(".filtering-image").equalizeCols();
+			jQuery(".item-info").equalizeCols(); 
 		
-		jQuery(window).load(function(){
-		jQuery(".filtering-image").equalizeCols(); // Make image container equal
-		jQuery(".item-info").equalizeCols(); // Make row heights equal
-		
-		
-		jQuery('.filtering-image').each(function() {
-	        var container_height = jQuery(this).height()+'px';
-	        jQuery(this).css('line-height', container_height);
+			// Get image height to vertically align image to bottom
+			jQuery('.filtering-image').each(function() {
+	        	var container_height = jQuery(this).height()+'px';
+	        	jQuery(this).css('line-height', container_height);
        
     	});
 
@@ -55,7 +55,7 @@ class Filtering extends PageLinesSection {
 </script>
 <?php
 
-
+		// Add frame around image if checked
 		if(ploption( 'filtering_thumb_frame', $this->oset )) {
 		?>
 		<script>
@@ -98,10 +98,7 @@ class Filtering extends PageLinesSection {
 							'name' => $post_type,
 							'inputlabel' => $post_type
 						);
-
 					}
-
-		
 				}
 
 				// Get Taxonomies
@@ -119,15 +116,15 @@ class Filtering extends PageLinesSection {
 				    'post_tag'
 				    
 				);
-				// All CPTs.
+				// All Taxonomies.
 				$taxs = get_taxonomies( array(
 				    'public'   => true,
 				    '_builtin' => false
 				) );
-				// remove Excluded CPTs from All CPTs.
+				// remove Excluded Taxonomies from All Taxonomies.
 				foreach($exclude_taxonomies as $exclude_taxonomy)
 				    unset($taxs[$exclude_taxonomy]);
-				// Merge Builtin types and 'important' CPTs to resulting array to use as argument.
+				// Merge Builtin types and 'important' Taxonomies to resulting array to use as argument.
 				$taxonomies = array_merge($builtin, $taxs);	
 	
 			$taxonomies_array = array();	
@@ -139,14 +136,11 @@ class Filtering extends PageLinesSection {
     						'name' => $taxonomy,
 							'inputlabel' => $taxonomy
 						);
-
-					}
-		
+					}		
 				}
 		
 			$metatab_array = array(
-				
-				
+
 				'filtering_setup' => array(
 					'type'		=> 'multi_option', 
 					'title'		=> __('Filtering Setup Options', 'filtering'), 
@@ -170,7 +164,7 @@ class Filtering extends PageLinesSection {
 					'filtering_terms_options' => array(
 					'type'		=> 'multi_option', 
 					'title'		=> __('Enter Categories, Terms or Tags to Exclude or Include', 'filtering'), 
-					'shortexp'	=> __('Use this area to either Exclude or Include Categories, Terms or Tags (Not both). If your category or term has children you can exclude/include those as well.', 'filtering'),
+					'shortexp'	=> __('Use this area to either Exclude or Include Categories, Terms or Tags (Not both). If your category or term has children you can exclude them, the default is to show category/term children.', 'filtering'),
 					'exp'			=> __( '', 'filtering'),
 					'selectvalues'	=> array(
 						'filtering_terms' => array(
@@ -188,7 +182,7 @@ class Filtering extends PageLinesSection {
 										'include'	=> array('name' => __( "Include", 'filtering') ),
 										), 
 								'inputlabel' => __( 'Exclude or Include these categories, terms or tags?")', 'filtering'),				
-),
+							),
 							
 						'filtering_children' => array(
 									'default'		=>	null,
@@ -196,8 +190,6 @@ class Filtering extends PageLinesSection {
 									'size'			=> 'small',
 									'inputlabel' 		=> __( 'Exclude Child Categories/Terms?', 'filtering'),
 								),
-								
-						
 					),
 				),		
 					'filtering_display' => array(
@@ -238,8 +230,6 @@ class Filtering extends PageLinesSection {
 							'inputlabel'	=> __( 'Number of posts to show. If left blank no pagination will occur, all posts will display based on post type and taxonomy chosen.', 'filtering'),				
 
 						),
-					 
-						
 						
 					),
 				),
@@ -379,7 +369,7 @@ class Filtering extends PageLinesSection {
     }
   
     
-  function taxonomy_query(){
+  	function taxonomy_query(){
   	 	global $filtering_ID;
         $oset = array('post_id' => $filtering_ID);
   		$filtering_tax = ( ploption( 'filtering_taxonomy', $this->oset ) ) ? ploption( 'filtering_taxonomy', $this->oset ) : 'category';

@@ -1,0 +1,37 @@
+== Description ==
+
+Filtering is a great way to show off your posts or custom post types while being able to filter by category, term or tag. Posts are displayed nicely in a grid with featured image, post title and/or excerpt. David DeSandro's jQuery Isotope does the filtering of your categories, terms or tags.
+
+<h3>Features</h3>
+
+<strong>Filter your posts or custom post types.</strong> Filtering works with posts but also your custom post types. 
+
+<strong>Filter by categories, tags or custom taxonomy terms.</strong> Filter your posts by category, tag or term making it easy for you site visitors to find what they are looking for.
+
+<strong>Exclude or include categories, terms or tags.</strong> By default Filtering displays posts from all categories, terms or tags.  You can create a list of categories, terms or tags to exclude or if your list is short, to include for filtering.
+
+<strong>Child category and term control.</strong> Filtering shows child categories/terms by default.  You can choose to hide child categories/terms and only show parent categories/terms.
+
+<strong>Show Featured Image, Post Title and/or Post Excerpt.</strong> Options let you 
+<ul>
+<li>show your featured image with post title</li>
+<li>featured image only</li>
+<li>featured image, post title and post excerpt</li>
+<li>or just the post title and excerpt.</li>
+</ul>
+
+<strong>Set width of item.</strong>  You can control the overall width of the item or let it work with the default setting of 250px.
+
+<strong>Option to add a default image.</strong>  Set a default image for posts that don't have a featured image. Upload or choose one from the media library.
+
+<strong>Use your thumbnail size for images or set a maximum width and height.</strong> Filtering uses the thumbnail size set in WordPress options to display images by default.  Options let you set a maximum width and height for images if you want to use a different size.
+
+<strong>Pagination option included</strong>  The beauty of filtering is that it takes a lot of posts and makes it easy to find by category/term/tag decreasing the amount of posts to sort through.  However, you may want to add pagination. If so, Filtering has a pagination option for you to enter the total number of posts to show per page.
+
+
+== Changelog ==
+
+= 1.0 =
+* Initial release.
+
+
