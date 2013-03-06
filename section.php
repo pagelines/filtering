@@ -379,33 +379,14 @@ class Filtering extends PageLinesSection {
     }
   
     
-    
-
-// Draw Filtering Container
-
-    function draw_filtering() {
-    	global $wp_query;
-    	global $post; 
-        global $filtering_ID;
+  function taxonomy_query(){
+  	 	global $filtering_ID;
         $oset = array('post_id' => $filtering_ID);
-
-        // Query Variables
-
-    	$filtering_type = ( ploption( 'filtering_post_type', $this->oset ) ) ? ploption( 'filtering_post_type', $this->oset ) : 'post';
-		$filtering_tax = ( ploption( 'filtering_taxonomy', $this->oset ) ) ? ploption( 'filtering_taxonomy', $this->oset ) : 'category';
-		$filtering_orderby = ( ploption( 'filtering_orderby', $this->oset ) ) ? ploption( 'filtering_orderby', $this->oset ) : 'ID';
-		$filtering_order = ( ploption( 'filtering_order', $this->oset ) ) ? ploption( 'filtering_order', $this->oset ) : 'DESC';
-		$filtering_terms = ( ploption( 'filtering_terms', $this->oset ) ) ? ploption( 'filtering_terms', $this->oset ) : '';
-      	$filtering_terms_type = ( ploption( 'filtering_terms_type', $this->oset ) ) ? ploption( 'filtering_terms_type', $this->oset ) : 'exclude';
-      	$filtering_number = ( ploption( 'filtering_number', $this->oset ) ) ? ploption( 'filtering_number', $this->oset ) : null;
-      
-      	if(ploption( 'filtering_number', $this->oset ) ) {
-      		$filtering_item_number = $filtering_number;
-
-      	} else {
-      		$filtering_item_number = -1;
-      	}
-      	// Setup Query Terms
+  		$filtering_tax = ( ploption( 'filtering_taxonomy', $this->oset ) ) ? ploption( 'filtering_taxonomy', $this->oset ) : 'category';
+		$filtering_terms_type = ( ploption( 'filtering_terms_type', $this->oset ) ) ? ploption( 'filtering_terms_type', $this->oset ) : 'exclude';
+     	$filtering_terms = ( ploption( 'filtering_terms', $this->oset ) ) ? ploption( 'filtering_terms', $this->oset ) : '';
+      	 		
+  	// Setup Query Terms
 
 		// Get Terms
       	
@@ -416,7 +397,12 @@ class Filtering extends PageLinesSection {
          	$filter_terms = explode(", ", $filtering_terms);
             foreach ($filter_terms as $filter_term) {
                 $term = get_term_by( 'name',  $filter_term,  $filtering_tax  );
-                 $termchildren = get_term_children( $term->term_id, $filtering_tax );
+                $is_tag = is_tag($term);
+                if($is_tag){
+                 $termchildren = 0;
+                 } else {
+                 	$termchildren = get_term_children( $term->term_id, $filtering_tax );
+                 }
                     // Get Children of Term
                 if ($termchildren !== 0 && $termchildren !== null) {
 	                foreach($termchildren as $termchild) {
@@ -430,6 +416,7 @@ class Filtering extends PageLinesSection {
              	} else {
              		$term_array[] = '';
              	}
+             }	
             	$terms_list= implode(", ", $term_array); 
             // See if want child terms in query too
             if(ploption('filtering_children', $this->oset )) {
@@ -443,7 +430,7 @@ class Filtering extends PageLinesSection {
         		$these_terms = $terms_list; 
         	}
         	
-        }// See if terms are to be excluded or included
+        // See if terms are to be excluded or included
         	if($filtering_terms_type != 'exclude'){
             	$args2 = array('include'=>$these_terms);
         	} else {
@@ -455,6 +442,7 @@ class Filtering extends PageLinesSection {
 	    		$args2 = array('parent'=>0);
 	    	} else {
 	    		$args2 = null;
+
 	    	}
 
 	    }
@@ -462,7 +450,30 @@ class Filtering extends PageLinesSection {
        
    
 	  $terms = get_terms($filtering_tax, $args2);
+	  return $terms;
 
+  } 
+
+  function filtering_query(){
+
+  	global $filtering_ID;
+        $oset = array('post_id' => $filtering_ID);
+        $terms = $this->taxonomy_query();
+  	 // Query Variables
+
+    	$filtering_type = ( ploption( 'filtering_post_type', $this->oset ) ) ? ploption( 'filtering_post_type', $this->oset ) : 'post';
+		$filtering_tax = ( ploption( 'filtering_taxonomy', $this->oset ) ) ? ploption( 'filtering_taxonomy', $this->oset ) : 'category';
+		$filtering_orderby = ( ploption( 'filtering_orderby', $this->oset ) ) ? ploption( 'filtering_orderby', $this->oset ) : 'ID';
+		$filtering_order = ( ploption( 'filtering_order', $this->oset ) ) ? ploption( 'filtering_order', $this->oset ) : 'DESC';
+		$filtering_number = ( ploption( 'filtering_number', $this->oset ) ) ? ploption( 'filtering_number', $this->oset ) : null;
+      
+      	if(ploption( 'filtering_number', $this->oset ) ) {
+      		$filtering_item_number = $filtering_number;
+
+      	} else {
+      		$filtering_item_number = -1;
+      	}
+      	
 	
 	  // Get terms to include in $filtering query
       $include = array();
@@ -471,9 +482,9 @@ class Filtering extends PageLinesSection {
 		    $include[] = $term->term_id;
 
 	if(ploption('filtering_children', $this->oset)) {
-		$include_children = true;
+		$include_children = false;
 		}else {
-			$include_children = false;
+			$include_children = true;
 		}	
 
 		$paged = (get_query_var('paged')) ? get_query_var('paged') : 1;
@@ -494,14 +505,29 @@ class Filtering extends PageLinesSection {
 				'include_children' => $include_children
 				
 			)
-		));  
+		)); 
 
-        // Filtering Query
-		$filtering = new WP_Query( $args );
 		
 
-        // Option Variables
+        // Filtering Query
+		$filtering_query = new WP_Query( $args );
+		return $filtering_query;
+		
 
+  } 
+
+// Draw Filtering Container
+
+    function draw_filtering() {
+    	global $wp_query;
+    	global $post; 
+        global $filtering_ID;
+        $oset = array('post_id' => $filtering_ID);
+        $terms = $this->taxonomy_query();
+        $filtering = $this->filtering_query();
+       
+        // Option Variables
+        $filtering_tax = ( ploption( 'filtering_taxonomy', $this->oset ) ) ? ploption( 'filtering_taxonomy', $this->oset ) : 'category';
         $filtering_width = (ploption('filtering_item_width' , $this->oset)) ? ploption('filtering_item_width' , $this->oset).'px' : '250px';
 		$filtering_show_excerpt = (ploption('filtering_show_excerpt' , $this->oset)) ? ploption('filtering_show_excerpt' , $this->oset) : '' ;
 		$filtering_excerpt_len = (ploption('filtering_excerpt_length' , $this->oset)) ? (ploption('filtering_excerpt_length' , $this->oset)) : '20';
@@ -671,12 +697,12 @@ class Filtering extends PageLinesSection {
 			'next_text' => 'Next'
 		));
  
-echo '</div>';
+	echo '</div>';
 
-}
+	}
 
 
- } // End Draw Taxonomy
+ } // End Draw Filtering
 
 
 }		
