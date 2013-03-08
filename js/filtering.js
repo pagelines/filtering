@@ -83,13 +83,17 @@ jQuery(document).ready(function(){
 	     
 	       mycontainer.isotope({
      			itemSelector: '.item',
-     			layoutMode: 'masonry'
+     			layoutMode: 'masonry',
+     			
+
+     			
      			
   		}).imagesLoaded( function() {
     	// trigger again after images have loaded
     		mycontainer.isotope('reLayout');
   		});
 		
+
 		  
 			
         
