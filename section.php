@@ -3,7 +3,7 @@
 	Section: Filtering
 	Author: elSue
 	Author URI: http://www.elsue.com
-	Description: Filter your posts or custom post types by category or hierachal custom taxonomy
+	Description: Filter your posts or custom post types by category, tag or custom taxonomy
 	Class Name: Filtering
 	Cloning: false
 	Workswith: content, template, main
@@ -257,7 +257,7 @@ class Filtering extends PageLinesSection {
 					),
 					'filtering_image_formatting' => array(
 						'type'		=> 'multi_option', 
-						'title'		=> __('Extra Image Options (Optional)', 'filtering'), 
+						'title'		=> __('Extra Image Options', 'filtering'), 
 						'shortexp'	=> __('By default Filtering uses the featured image from your posts and are thumbnail sized (thumbnail sizes are set in WordPress Settings -> Media). If you want your images to be another size, enter the maximum width and maximum height below. You can also upload an image to use when no featured image is present. ', 'filtering'),
 						'exp'		=> __('', 'filtering'),
 						'selectvalues'	=> array(
@@ -266,7 +266,7 @@ class Filtering extends PageLinesSection {
 								'default'		=> '',
 								'type' 			=> 'text_small',
 								
-								'inputlabel' 		=> __( 'Maximum Image Width.', 'filtering'),
+								'inputlabel' 		=> __( 'Maximum Image Width', 'filtering'),
 							),
 							'filtering_image_height' => array(
 								'default'		=> '',
@@ -278,7 +278,7 @@ class Filtering extends PageLinesSection {
 							'filtering_default_image' => array(
 								
 								'type' 			=> 'image_upload',
-								'inputlabel' 		=> __( 'Upload an image to use when no thumbnail present (optional)', 'filtering'),
+								'inputlabel' 		=> __( 'Upload an image to use when no thumbnail is present (optional)', 'filtering'),
 							),
 							
 							'filtering_thumb_frame' => array(
@@ -409,35 +409,34 @@ class Filtering extends PageLinesSection {
             	$terms_list= implode(", ", $term_array); 
             // See if want child terms in query too
             if(ploption('filtering_children', $this->oset )) {
-            	if($childterm !== null) {
+            	$these_terms = $terms_list;
+        	} else {
+        		
+        		if($childterm !== null) {
             	$terms_children= implode(", ", $childterm);
             	}else {
             	$terms_children = '';
             	}
-          		$these_terms = $terms_list . ',' . $terms_children; 
-        	} else {
-        		$these_terms = $terms_list; 
+          		$these_terms = $terms_list .',' .$terms_children; 
         	}
         	
-        // See if terms are to be excluded or included
+        // See if terms are to be excluded or included and whether to show children
         	if($filtering_terms_type != 'exclude'){
-            	$args2 = array('include'=>$these_terms);
+        		if(ploption('filtering_children', $this->oset )) {
+            	$args2 = array('include'=>$these_terms, 'parent'=>0);
+            	} else {
+            		$args2 = array('include'=>$these_terms);
+            	}
         	} else {
-        		$args2 = array('exclude'=>$these_terms);
+        		if(ploption('filtering_children', $this->oset )) {
+            	$args2 = array('exclude_tree'=>$these_terms);
+            	} else {
+            		$args2 = array('exclude'=>$these_terms);
+            	}
         	}
-
-	    } else {
-	    	if(ploption('filtering_children', $this->oset )) {
-	    		$args2 = array('parent'=>0);
-	    	} else {
-	    		$args2 = null;
-
-	    	}
-
+	    	
 	    }
 
-       
-   
 	  $terms = get_terms($filtering_tax, $args2);
 	  return $terms;
 
@@ -542,18 +541,59 @@ class Filtering extends PageLinesSection {
 			
 		}
         
-        // Draw Filtering Navigation
+       // Get only terms on page to display in navigation
 
-        ?>
+        $term_list = array();
+         while ($filtering->have_posts() ) : $filtering->the_post();
+	
+			// Get Post Terms
+        	$post_terms = get_the_terms($post->ID , $filtering_tax );
+
+		 		foreach ( $post_terms as $term ) :   
+	      			
+	      			if( !in_array( $term->term_id, $term_list ) ){
+	      				$term_list[] = $term->term_id;
+	    				}
+	    				
+	         	endforeach;   
+         	endwhile;
+         	
+
+         	$nav_terms = array();
+         	foreach($terms as $term) :
+         		
+         		$parent = $term->parent;
+         		if( in_array( $term->term_id, $term_list ) ){
+         			
+         	if(ploption('filtering_children', $this->oset)) {
+         		if($term->parent > 0) {
+         			 null;
+         		} else {
+         			$nav_terms[] = $term->term_id;
+         		}
+         	} else {
+         		$nav_terms[] = $term->term_id;
+         	}
+
+         			
+	      				
+	    				
+	    			}
+
+         	endforeach; 
+
+         	
+         ?>
 
         <nav class="filtering-nav-wrap">
            <ul class="options clearfix">
-				
+			
 		<?php 
 			printf('<li><a href="#show-all" data-filter="*" class="selected">%s</a></li>' , $filtering_all_phrase);
+		
 
-
-			foreach( $terms as $term ){ ?>
+			foreach( $nav_terms as $term_id ){
+				$term = get_term( $term_id, $filtering_tax ); ?>
 
 		    	<li><a href="#" data-filter=".<?php echo $term->slug?>"><?php echo $term->name?></a></li>
 
@@ -562,6 +602,7 @@ class Filtering extends PageLinesSection {
 			</ul>
            
         </nav>
+
 
         <div class="filtering clearfix">
         <?php
