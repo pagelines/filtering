@@ -195,14 +195,14 @@ class Filtering extends PageLinesSection {
 					'type'		=> 'multi_option', 
 					'title'		=> __('Filtering Display Options', 'filtering'), 
 					'shortexp'	=> __('Options for displaying of items.', 'filtering'),
-					'exp'			=> __( '', 'filtering'),
+					'exp'			=> __( 'Note on Pagination: Filtering works best without pagination. If you do want to use pagination only the categories/terms/tags found in the items on the page will show in the navigation.', 'filtering'),
 					'selectvalues'	=> array(	
 						
 						'filtering_item_width' => array(
 							'type' 			=> 'text_small',
 							'default'		=> '250px',
 							
-							'inputlabel' 		=> __( 'Width of  each item item. Default is "250px". Enter just the width value, px will be added for you.' , 'filtering'),
+							'inputlabel' 		=> __( 'Width of  each item. Default is "250px". Enter just the width value, px will be added for you.' , 'filtering'),
 						),
 						'filtering_all_phrase' => array(
 							'type' 			=> 'text',
@@ -226,7 +226,7 @@ class Filtering extends PageLinesSection {
 						'filtering_number' => array(
 							
 							'type' 			=> 'text_small',
-							'inputlabel'	=> __( 'Number of posts to show. If left blank no pagination will occur, all posts will display based on post type and taxonomy chosen.', 'filtering'),				
+							'inputlabel'	=> __( 'Number of posts to show. Leave blank to show all posts (Suggested) otherwise enter a number (best 10 or more posts per page). ', 'filtering'),				
 
 						),
 						
@@ -435,6 +435,13 @@ class Filtering extends PageLinesSection {
             	}
         	}
 	    	
+	    } else {
+	    	if(ploption('filtering_children', $this->oset )) {
+            	$args2 = array('parent'=>0);
+            	} else {
+            		$args2 = null;
+            	}
+
 	    }
 
 	  $terms = get_terms($filtering_tax, $args2);
