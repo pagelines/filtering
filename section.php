@@ -19,7 +19,7 @@
  * @author PageLines
  */
 class Filtering extends PageLinesSection {
-	
+		
 
 	/**
 	* Load js
@@ -34,7 +34,8 @@ class Filtering extends PageLinesSection {
 		}
 
 	function section_head() {
-	
+	$filtering_number = ( ploption( 'filtering_number', $this->oset ) ) ? ploption( 'filtering_number', $this->oset ) : null;
+      
 		?>
 		<script>
 		
@@ -45,8 +46,10 @@ class Filtering extends PageLinesSection {
 			jQuery('.filtering-image').each(function() {
 	        	var container_height = jQuery(this).height()+'px';
 	        	jQuery(this).css('line-height', container_height);
+	        	
        
     	});
+			
 
 		
 });
@@ -67,6 +70,13 @@ class Filtering extends PageLinesSection {
 		}
 		
 	}
+function section_persistent() {
+	 	add_action( 'pre_get_posts', array(&$this, 'set_per_page'), 1 );
+
+}
+	
+
+
 
 
 
@@ -211,7 +221,40 @@ class Filtering extends PageLinesSection {
 							'inputlabel' 		=> __( 'Word/Phrase to use for All Items (Default is "Show All")' , 'filtering'),
 						),
 
-						'filtering_image_type' => array(
+						
+						'filtering_orderby' => array(
+								'type'			=> 'select',
+								'default'		=> 'ID',
+								'inputlabel'	=> 'Order Posts By (If Not With Post Type Order Plugin)',
+								'selectvalues' => array(
+									'ID' 		=> array('name' => __( 'Post ID (default)', 'filtering') ),
+									'title' 	=> array('name' => __( 'Title', 'filtering') ),
+									'date' 		=> array('name' => __( 'Date', 'filtering') ),
+									'modified' 	=> array('name' => __( 'Last Modified', 'filtering') ),
+									'rand' 		=> array('name' => __( 'Random', 'filtering') ),							
+								)
+							),
+							'filtering_order' => array(
+									'default' => 'DESC',
+									'type' => 'select',
+									'selectvalues' => array(
+										'DESC' 		=> array('name' => __( 'Descending (default)', 'filtering') ),
+										'ASC' 		=> array('name' => __( 'Ascending', 'filtering') ),
+									),
+									'inputlabel'=> __( 'Select sort order', 'filtering'),
+							),
+						
+						
+					),
+				),
+				
+					'filtering_post_options' => array(
+						'type'		=> 'multi_option', 
+						'title'		=> __('Post Options', 'filtering'), 
+						'shortexp'	=> __('Options for what to show for each post.', 'filtering'),
+						'exp'		=> __('', 'filtering'),
+						'selectvalues'	=> array(
+							'filtering_image_type' => array(
 								'type' 		=> 'select',
 								'default'	=> 'images',
 								'selectvalues'	=> array(
@@ -223,22 +266,18 @@ class Filtering extends PageLinesSection {
 								'inputlabel' => __( 'Image Display Option (default is "Show Image on Top")', 'filtering'),				
 
 						),
-						'filtering_number' => array(
-							
-							'type' 			=> 'text_small',
-							'inputlabel'	=> __( 'Number of posts to show. Leave blank to show all posts (Suggested) otherwise enter a number (best 10 or more posts per page). ', 'filtering'),				
-
-						),
-						
-					),
-				),
-				
-					'filtering_excerpt_formatting' => array(
-						'type'		=> 'multi_option', 
-						'title'		=> __('Filtering Excerpt Options', 'filtering'), 
-						'shortexp'	=> __('Options for formatting box excerpts.', 'filtering'),
-						'exp'		=> __('', 'filtering'),
-						'selectvalues'	=> array(
+							'filtering_show_info' => array(
+									'default'		=> null,
+									'type' 			=> 'check',
+									'size'			=> 'small',
+									'inputlabel' 		=> __( 'Show post date and author?', 'filtering'),
+								),
+							'filtering_date_format' => array(
+								'default'		=> 'F j, Y',
+								'type' 			=> 'text_small',
+								'size'			=> 'small',
+								'inputlabel' 	=> __( 'Enter the date format e.g. F j, Y (Default)', 'filtering'),
+							),
 							'filtering_show_excerpt' => array(
 									'default'		=> null,
 									'type' 			=> 'check',
@@ -250,8 +289,9 @@ class Filtering extends PageLinesSection {
 								'default'		=> '20',
 								'type' 			=> 'text_small',
 								'size'			=> 'small',
-								'inputlabel' 	=> __( 'Max number of words for excerpts', 'filtering'),
+								'inputlabel' 	=> __( 'Max number of words for excerpts (Default is 20)', 'filtering'),
 							),
+							
 							
 						),
 					),
@@ -261,6 +301,7 @@ class Filtering extends PageLinesSection {
 						'shortexp'	=> __('By default Filtering uses the featured image from your posts and are thumbnail sized (thumbnail sizes are set in WordPress Settings -> Media). If you want your images to be another size, enter the maximum width and maximum height below. You can also upload an image to use when no featured image is present. ', 'filtering'),
 						'exp'		=> __('', 'filtering'),
 						'selectvalues'	=> array(
+
 							
 						 	'filtering_image_width' => array(
 								'default'		=> '',
@@ -293,34 +334,31 @@ class Filtering extends PageLinesSection {
 					 	),
 					
 					
-					'filtering_ordering' => array(
+					'filtering_pagination' => array(
 						'type'		=> 'multi_option', 
-						'title'		=> __('Post Ordering Options', 'filtering'), 
-						'shortexp'	=> __('Optionally control the ordering of the your posts', 'filtering'),
-						'exp'		=> __('Posts are ordered by ID by default.  Use the option below to change the post order.  Another way to order posts is using a post type order plugin for WordPress.', 'filtering'),
+						'title'		=> __('Pagination Options', 'filtering'), 
+						'shortexp'	=> __('Filtering works best without pagination and the default is no pagination. Use the settings below if you want to limit the number of posts per page. Some things to consider when using pagination: </br /><br />1) Using pagination on your Blog and Custom Post Types<ul style="padding-left:20px;"><li style="list-style: disc;">The best way to use pagination on these pages is to set the number of items equal to or more than what is in your WordPress -> Settings -> Reading options.</li><li style="list-style: disc;">If you set the number of items less than what is in your WordPress Settings then you must choose the option below to override the WordPress Settings or you will receive 404 errors on Filtering pages after page 1 or 2.</li><li style="list-style: disc;">Overriding WordPress Settings may affect the number of items displayed on other archive pages even though the Filtering Section is not active on that archive.</li> </ul>2) Only the categories/terms/tags that are present in the posts on the page will display in the Filtering navigation.', 'filtering'),
+						'exp'		=> __('', 'filtering'),
 						'selectvalues'	=> array(
+							'filtering_number' => array(
 							
-							'filtering_orderby' => array(
-								'type'			=> 'select',
-								'default'		=> 'ID',
-								'inputlabel'	=> 'Order Posts By (If Not With Post Type Order Plugin)',
-								'selectvalues' => array(
-									'ID' 		=> array('name' => __( 'Post ID (default)', 'filtering') ),
-									'title' 	=> array('name' => __( 'Title', 'filtering') ),
-									'date' 		=> array('name' => __( 'Date', 'filtering') ),
-									'modified' 	=> array('name' => __( 'Last Modified', 'filtering') ),
-									'rand' 		=> array('name' => __( 'Random', 'filtering') ),							
-								)
-							),
-							'filtering_order' => array(
-									'default' => 'DESC',
-									'type' => 'select',
-									'selectvalues' => array(
-										'DESC' 		=> array('name' => __( 'Descending (default)', 'filtering') ),
-										'ASC' 		=> array('name' => __( 'Ascending', 'filtering') ),
-									),
-									'inputlabel'=> __( 'Select sort order', 'filtering'),
-							),
+							'type' 			=> 'text_small',
+							'inputlabel'	=> __( 'Number of posts to show. Leave blank to show all posts (Suggested) otherwise enter a number (best 10 or more posts per page). ', 'filtering'),				
+
+						),
+						'filtering_override_home' => array(
+							
+							'type' 			=> 'check',
+							'inputlabel'	=> __( 'Override WordPress Post Per Page Setting for Home/Blog Page? Only use if number of items is less than in WordPress Settings -> Reading.', 'filtering'),				
+
+						),
+						'filtering_override_archive' => array(
+							
+							'type' 			=> 'check',
+							'inputlabel'	=> __( 'Override WordPress Post Per Page Setting for Custom Post Type Archive Page? Only use if number of items is less than in WordPress Settings -> Reading.', 'filtering'),				
+
+						),	
+							
 						),
 					),
 					
@@ -367,7 +405,33 @@ class Filtering extends PageLinesSection {
 
     }
   
-    
+    function set_per_page( $query ) {
+    	
+    	
+    // Fixes pagination issue on archive pages
+		global $wp_query;
+		$filtering_number = ( ploption( 'filtering_number') ) ? ploption( 'filtering_number') : null;
+    $filtering_type = ( ploption( 'filtering_type') ) ? ploption( 'filtering_type') : 'post';
+    	 $filtering_override_home = ( ploption( 'filtering_override_home') ) ? ploption( 'filtering_override_home') : null;
+    	$filtering_override_archive = ( ploption( 'filtering_override_archive') ) ? ploption( 'filtering_override_archive') : null;
+		if($filtering_override_home){
+	    if($query->is_home()&&($query === $wp_query)){
+	    $query->set( 'posts_per_page', $filtering_number);
+	    }
+	}	if($filtering_override_archive){
+	    if($query->is_post_type_archive()&&($query === $wp_query)){
+	    $query->set( 'posts_per_page', $filtering_number);
+	    }
+	}
+	    
+	  	return $query;
+	 
+	}
+
+	
+
+
+
   	function taxonomy_query(){
   	 	global $filtering_ID;
         $oset = array('post_id' => $filtering_ID);
@@ -483,6 +547,9 @@ class Filtering extends PageLinesSection {
 		}	
 
 		$paged = (get_query_var('paged')) ? get_query_var('paged') : 1;
+		if ( get_query_var('paged') ) $paged = get_query_var('paged');
+
+		if ( get_query_var('page') ) $paged = get_query_var('page');
 
 	// Query arguments
 	 $args = array(
@@ -514,19 +581,20 @@ class Filtering extends PageLinesSection {
 // Draw Filtering Container
 
     function draw_filtering() {
-    	global $wp_query;
+    	
     	global $post; 
         global $filtering_ID;
         $oset = array('post_id' => $filtering_ID);
         $terms = $this->taxonomy_query();
         $filtering = $this->filtering_query();
-       
+        
         // Option Variables
         $filtering_tax = ( ploption( 'filtering_taxonomy', $this->oset ) ) ? ploption( 'filtering_taxonomy', $this->oset ) : 'category';
         $filtering_width = (ploption('filtering_item_width' , $this->oset)) ? ploption('filtering_item_width' , $this->oset).'px' : '250px';
 		$filtering_show_excerpt = (ploption('filtering_show_excerpt' , $this->oset)) ? ploption('filtering_show_excerpt' , $this->oset) : '' ;
 		$filtering_excerpt_len = (ploption('filtering_excerpt_length' , $this->oset)) ? (ploption('filtering_excerpt_length' , $this->oset)) : '20';
         $filtering_all_phrase = (ploption('filtering_all_phrase', $this->oset)) ? (ploption('filtering_all_phrase', $this->oset)) : 'Show All';
+		$filtering_date_format = ( ploption( 'filtering_date_format', $this->oset ) ) ? ploption( 'filtering_date_format', $this->oset ) : 'F, j Y';
 		$filtering_image = (ploption('filtering_image_type' , $this->oset)) ? ploption('filtering_image_type' , $this->oset) : 'images';
        	$filtering_image_width = (ploption('filtering_image_width' , $this->oset)) ? ploption('filtering_image_width' , $this->oset) : '';
 		$filtering_image_height = (ploption('filtering_image_height' , $this->oset)) ? ploption('filtering_image_height' , $this->oset) : '';
@@ -549,7 +617,7 @@ class Filtering extends PageLinesSection {
 		}
         
        // Get only terms on page to display in navigation
-
+		
         $term_list = array();
          while ($filtering->have_posts() ) : $filtering->the_post();
 	
@@ -566,11 +634,11 @@ class Filtering extends PageLinesSection {
          	endwhile;
          	
 
-         	$nav_terms = array();
-         	foreach($terms as $term) :
+         $nav_terms = array();
+         foreach($terms as $term) :
          		
-         		$parent = $term->parent;
-         		if( in_array( $term->term_id, $term_list ) ){
+         $parent = $term->parent;
+         if( in_array( $term->term_id, $term_list ) ){
          			
          	if(ploption('filtering_children', $this->oset)) {
          		if($term->parent > 0) {
@@ -580,14 +648,11 @@ class Filtering extends PageLinesSection {
          		}
          	} else {
          		$nav_terms[] = $term->term_id;
-         	}
-
-         			
-	      				
+         	}			
 	    				
-	    			}
+	    }
 
-         	endforeach; 
+        endforeach; 
 
          	
          ?>
@@ -618,15 +683,16 @@ class Filtering extends PageLinesSection {
 
         while ($filtering->have_posts() ) : $filtering->the_post();
 
-        	
+        	$date = get_the_date($filtering_date_format);
 			// Get Post Terms
         	$terms = get_the_terms($post->ID , $filtering_tax );
 			$terms_string = '';
 	 		foreach ( $terms as $term ) :     
       			$terms_string = $terms_string.$term->slug.' '; 
          	endforeach;   
-         	
+         	sprintf($date);
 			// Start Drawing Item
+			 
          	printf( '<div class="item %s " style="width: %s; margin-right: 10px;">' , $terms_string, $filtering_width);
 
 			echo '<div class="inner-item">';
@@ -676,18 +742,25 @@ class Filtering extends PageLinesSection {
 	 } // End Show Image
 
 	 // Draw Title as long as not only_images
-
+	 		
 	 if($filtering_image != 'only_images')	{
 	?>
 		<div class="item-info">
 			<div class="item-title">
 				<h4><a href="<?php the_permalink(); ?>" title="<?php the_title_attribute(); ?>"><?php the_title(); ?></a></h4>
+			
 			</div>
 
 	<?php
 
+		if(ploption('filtering_show_info', $this->oset)) {
+			printf('<div class="post-info">%s By ' , $date);
+			echo the_author_posts_link();
+			echo '</div>';
+		}
+
 		// Draw excerpt as long as true
-	
+		
     	if(ploption('filtering_show_excerpt', $this->oset)) {
     		// Get post excerpt
             	if($post->post_excerpt != ''){
@@ -696,7 +769,6 @@ class Filtering extends PageLinesSection {
 				$filtering_excerpt = custom_trim_excerpt(apply_filters('the_content', $post->post_content), $filtering_excerpt_len ); 
 			}
 
-    		
     		printf('<div class="item-excerpt">%s</div>', $filtering_excerpt );
     	}
 
@@ -713,7 +785,6 @@ class Filtering extends PageLinesSection {
 
 
 	echo '</div>';
-
 
 
 	$total_pages = $filtering->max_num_pages;
@@ -735,7 +806,7 @@ class Filtering extends PageLinesSection {
 		));
  
 	echo '</div>';
-
+	
 	}
 
 
