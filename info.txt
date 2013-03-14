@@ -26,7 +26,7 @@ Filtering is a great way to show off your posts or custom post types while being
 
 <strong>Use your thumbnail size for images or set a maximum width and height.</strong> Filtering uses the thumbnail size set in WordPress options to display images by default.  Options let you set a maximum width and height for images if you want to use a different size.
 
-<strong>Pagination option included</strong>  The beauty of filtering is that it takes a lot of posts and makes it easy to find by category/term/tag decreasing the amount of posts to sort through.  However, you may want to add pagination. If so, Filtering has a pagination option for you to enter the total number of posts to show per page.
+<strong>Pagination option included</strong>  The beauty of filtering is that it takes a lot of posts and makes it easy to find by category/term/tag decreasing the amount of posts to sort through.  However, you may want to add pagination. If so, Filtering has a pagination option.
 
 
 == Changelog ==
