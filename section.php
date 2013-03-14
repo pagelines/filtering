@@ -7,6 +7,7 @@
 	Class Name: Filtering
 	Cloning: false
 	Workswith: content, template, main
+	Failswith: archive, tag, category, author
 	Version: 1.0
 	Demo: http://pagelines.ellenjanemoore.com/filtering-demo/
 	
