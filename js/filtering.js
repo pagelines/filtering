@@ -1,8 +1,6 @@
-jQuery(document).ready(function(){
-	jQuery(".filtering-image").equalizeCols();
-			jQuery(".item-info").equalizeCols(); 
-		 
 
+jQuery(document).ready(function(){
+	
 		// Isotope Center Container
 
 	    jQuery.Isotope.prototype._getCenteredMasonryColumns = function() {
@@ -63,6 +61,8 @@ jQuery(document).ready(function(){
 	        };
 	  };
 
+	  jQuery(".filtering-image").equalizeCols();
+			jQuery(".item-info").equalizeCols();
 
 	  // Call Isotope
 	 
@@ -103,6 +103,6 @@ jQuery(document).ready(function(){
 	  mycontainer.isotope({ filter: selector });
 	  return false;  
 	  });
- 
+ 	
 
 });
