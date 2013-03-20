@@ -61,8 +61,7 @@ jQuery(document).ready(function(){
 	        };
 	  };
 
-	  jQuery(".filtering-image").equalizeCols();
-			jQuery(".item-info").equalizeCols();
+	 
 
 	  // Call Isotope
 	 
@@ -89,6 +88,8 @@ jQuery(document).ready(function(){
      			
      			
   		}).imagesLoaded( function() {
+  			 jQuery(".filtering-image").equalizeCols();
+			jQuery(".item-info").equalizeCols();
     	// trigger again after images have loaded
     		mycontainer.isotope('reLayout');
   		});

@@ -36,6 +36,9 @@ Filtering is a great way to show off your posts or custom post types while being
 
 == Changelog ==
 
+= 1.01 =
+* Fixed excerpt displaying over image on page reload
+
 = 1.0 =
 * Initial release.
 
