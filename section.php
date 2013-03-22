@@ -8,7 +8,7 @@
 	Cloning: false
 	Workswith: content, template, main
 	Failswith: archive, tag, category, author
-	Version: 1.01
+	Version: 1.02
 	Demo: http://pagelines.ellenjanemoore.com/filtering-demo/
 	
 */
