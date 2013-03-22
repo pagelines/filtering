@@ -35,8 +35,7 @@ class Filtering extends PageLinesSection {
 		}
 
 	function section_head() {
-	$filtering_number = ( ploption( 'filtering_number', $this->oset ) ) ? ploption( 'filtering_number', $this->oset ) : null;
-      
+
 		?>
 		<script>
 		
@@ -72,6 +71,7 @@ class Filtering extends PageLinesSection {
 		
 	}
 function section_persistent() {
+
 	 	add_action( 'pre_get_posts', array(&$this, 'set_per_page'), 1 );
 
 }
@@ -394,11 +394,13 @@ function section_persistent() {
 		global $filtering;
         global $post; global $filtering_ID;
         $oset = array('post_id' => $filtering_ID);
+        
         $filtering_class = ( ploption( 'filtering_class', $this->oset ) ) ? ploption( 'filtering_class', $this->oset ) : null;
-		
+				
 
 		
 			printf( '<div class="section-filtering %s">' , $filtering_class);
+			
 				$this->draw_filtering();
 				
 			echo '</div>';
@@ -406,29 +408,32 @@ function section_persistent() {
 
     }
   
-    function set_per_page( $query ) {
+
+function set_per_page( $query ) {
     	
     	
     // Fixes pagination issue on archive pages
 		global $wp_query;
-		$filtering_number = ( ploption( 'filtering_number') ) ? ploption( 'filtering_number') : null;
-    $filtering_type = ( ploption( 'filtering_type') ) ? ploption( 'filtering_type') : 'post';
-    	 $filtering_override_home = ( ploption( 'filtering_override_home') ) ? ploption( 'filtering_override_home') : null;
-    	$filtering_override_archive = ( ploption( 'filtering_override_archive') ) ? ploption( 'filtering_override_archive') : null;
-		if($filtering_override_home){
-	    if($query->is_home()&&($query === $wp_query)){
-	    $query->set( 'posts_per_page', $filtering_number);
-	    }
-	}	if($filtering_override_archive){
-	    if($query->is_post_type_archive()&&($query === $wp_query)){
-	    $query->set( 'posts_per_page', $filtering_number);
-	    }
-	}
-	    
-	  	return $query;
-	 
-	}
 
+	if(is_page_template()) {
+		null;
+	}else {
+
+		if (ploption( 'filtering_override_home')) {	
+	    	if($query->is_home()&&($query === $wp_query)){
+	    		$query->set( 'posts_per_page',  ploption( 'filtering_number'));
+	    		return $query;
+	    	}
+		}
+		if (ploption( 'filtering_override_archive')) {	
+	    	if($query->is_post_type_archive()&&($query === $wp_query)){
+	    		$query->set( 'posts_per_page',  ploption( 'filtering_number'));
+	    		return $query;
+	    	}
+		}
+	}
+	 
+}
 	
 
 
