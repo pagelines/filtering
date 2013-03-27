@@ -8,7 +8,7 @@
 	Cloning: false
 	Workswith: content, template, main
 	Failswith: archive, tag, category, author
-	Version: 1.02
+	Version: 1.03
 	Demo: http://pagelines.ellenjanemoore.com/filtering-demo/
 	
 */
@@ -217,7 +217,7 @@ function section_persistent() {
 						),
 						'filtering_all_phrase' => array(
 							'type' 			=> 'text',
-							'default'		=> 'Show All',
+							'default'		=> __('Show All'),
 							
 							'inputlabel' 		=> __( 'Word/Phrase to use for All Items (Default is "Show All")' , 'filtering'),
 						),
@@ -437,7 +437,6 @@ function set_per_page( $query ) {
 	
 
 
-
   	function taxonomy_query(){
   	 	global $filtering_ID;
         $oset = array('post_id' => $filtering_ID);
@@ -599,8 +598,8 @@ function set_per_page( $query ) {
         $filtering_width = (ploption('filtering_item_width' , $this->oset)) ? ploption('filtering_item_width' , $this->oset).'px' : '250px';
 		$filtering_show_excerpt = (ploption('filtering_show_excerpt' , $this->oset)) ? ploption('filtering_show_excerpt' , $this->oset) : '' ;
 		$filtering_excerpt_len = (ploption('filtering_excerpt_length' , $this->oset)) ? (ploption('filtering_excerpt_length' , $this->oset)) : '20';
-        $filtering_all_phrase = (ploption('filtering_all_phrase', $this->oset)) ? (ploption('filtering_all_phrase', $this->oset)) : 'Show All';
-		$filtering_date_format = ( ploption( 'filtering_date_format', $this->oset ) ) ? ploption( 'filtering_date_format', $this->oset ) : 'F, j Y';
+        $filtering_all_phrase = (ploption('filtering_all_phrase', $this->tset)) ? (ploption('filtering_all_phrase', $this->tset)) : 'Show All';
+		$filtering_date_format = ( ploption( 'filtering_date_format', $this->tset ) ) ? ploption( 'filtering_date_format', $this->tset ) : 'F, j Y';
 		$filtering_image = (ploption('filtering_image_type' , $this->oset)) ? ploption('filtering_image_type' , $this->oset) : 'images';
        	$filtering_image_width = (ploption('filtering_image_width' , $this->oset)) ? ploption('filtering_image_width' , $this->oset) : '';
 		$filtering_image_height = (ploption('filtering_image_height' , $this->oset)) ? ploption('filtering_image_height' , $this->oset) : '';
@@ -807,8 +806,8 @@ function set_per_page( $query ) {
 			'current' => $current_page,
 			'total' => $total_pages,
 			'type' => 'list',
-			'prev_text' => 'Prev',
-			'next_text' => 'Next'
+			'prev_text' => __('Prev'),
+			'next_text' => __('Next')
 		));
  
 	echo '</div>';
