@@ -36,6 +36,9 @@ Filtering is a great way to show off your posts or custom post types while being
 
 == Changelog ==
 
+= 1.03 =
+* Fixed translation of Show All, Prev and Next Text
+
 = 1.02 =
 * Fixed error notice for non-object in class.template.php
 * Smoother transistions in webkit browsers
