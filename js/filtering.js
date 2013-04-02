@@ -102,8 +102,18 @@ jQuery(document).ready(function(){
 	jQuery('.options a').click(function(){
 	  var selector = jQuery(this).attr('data-filter');
 	  mycontainer.isotope({ filter: selector });
-	  return false;  
+	    
+	  var optionSet=jQuery(this).parents(".options");
+		if(jQuery(this).hasClass("selected")){
+			return false}
+			jQuery(optionSet).find(".selected").removeClass("selected");
+			jQuery(this).addClass("selected");
+		return false;
 	  });
+
+	
+	
+		
  	
 
 });

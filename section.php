@@ -8,7 +8,7 @@
 	Cloning: false
 	Workswith: content, template, main
 	Failswith: archive, tag, category, author
-	Version: 1.03
+	Version: 1.1
 	Demo: http://pagelines.ellenjanemoore.com/filtering-demo/
 	
 */
@@ -35,6 +35,7 @@ class Filtering extends PageLinesSection {
 		}
 
 	function section_head() {
+		
 
 		?>
 		<script>
@@ -71,7 +72,7 @@ class Filtering extends PageLinesSection {
 		
 	}
 function section_persistent() {
-
+		
 	 	add_action( 'pre_get_posts', array(&$this, 'set_per_page'), 1 );
 
 }
@@ -292,6 +293,11 @@ function section_persistent() {
 								'size'			=> 'small',
 								'inputlabel' 	=> __( 'Max number of words for excerpts (Default is 20)', 'filtering'),
 							),
+							'filtering_excerpt_more' => array(
+								'default'		=> '',
+								'type' 			=> 'text',
+								'inputlabel' 	=> __( 'Continue reading phrase (... display at end of excerpt if no phrase entered)', 'filtering'),
+							),
 							
 							
 						),
@@ -415,8 +421,8 @@ function set_per_page( $query ) {
     // Fixes pagination issue on archive pages
 		global $wp_query;
 
-	if(is_page_template()) {
-		null;
+	if($query->is_page()&&($query === $wp_query)) {
+		return $query;
 	}else {
 
 		if (ploption( 'filtering_override_home')) {	
@@ -551,11 +557,10 @@ function set_per_page( $query ) {
 			$include_children = true;
 		}	
 
-		$paged = (get_query_var('paged')) ? get_query_var('paged') : 1;
-		if ( get_query_var('paged') ) $paged = get_query_var('paged');
-
-		if ( get_query_var('page') ) $paged = get_query_var('page');
-
+		if ( get_query_var('paged') ) { $paged = get_query_var('paged'); }
+		elseif ( get_query_var('page') ) { $paged = get_query_var('page'); }
+		else { $paged = 1; }
+		
 	// Query arguments
 	 $args = array(
 	 	'post_type' => $filtering_type,
@@ -588,6 +593,7 @@ function set_per_page( $query ) {
     function draw_filtering() {
     	
     	global $post; 
+    	global $text;
         global $filtering_ID;
         $oset = array('post_id' => $filtering_ID);
         $terms = $this->taxonomy_query();
@@ -771,10 +777,12 @@ function set_per_page( $query ) {
             	if($post->post_excerpt != ''){
 				$filtering_excerpt = $post->post_excerpt;
 			}else {
-				$filtering_excerpt = custom_trim_excerpt(apply_filters('the_content', $post->post_content), $filtering_excerpt_len ); 
-			}
+				
+				$filtering_excerpt=$this->custom_trim_excerpt($text);
+				}
 
     		printf('<div class="item-excerpt">%s</div>', $filtering_excerpt );
+    		
     	}
 
 	echo '</div>';
@@ -792,30 +800,57 @@ function set_per_page( $query ) {
 	echo '</div>';
 
 
-	$total_pages = $filtering->max_num_pages;
- 
-		if ($total_pages > 1){
-		 
-		$current_page = max(1, get_query_var('paged'));
-		 
-		echo '<div class="pagination pagination-centered">';
-		 
-		echo paginate_links(array(
-			'base' => get_pagenum_link(1) . '%_%',
-			'format' => '/page/%#%',
+
+    $total_pages = $filtering->max_num_pages;
+  	$big = 999999999; // need an unlikely integer
+        if ($total_pages > 1){
+          
+        $current_page = max(1, get_query_var('paged'));
+          
+        echo '<div class="pagination pagination-centered">';
+          
+        echo paginate_links(array(
+            'base' => str_replace( $big, '%#%', esc_url( get_pagenum_link( $big ) ) ),
+			'format' => '?paged=%#%',
 			'current' => $current_page,
-			'total' => $total_pages,
-			'type' => 'list',
-			'prev_text' => __('Prev'),
-			'next_text' => __('Next')
-		));
- 
-	echo '</div>';
+            'total' => $total_pages,
+            'type' => 'list',
+            'prev_text' => __('Prev'),
+            'next_text' => __('Next')
+        ));
+  
+    echo '</div>';
+     
+    }
 	
-	}
 
 
  } // End Draw Filtering
+
+function custom_trim_excerpt($text) { // Fakes an excerpt if needed
+global $post;
+	$filtering_excerpt_len = (ploption('filtering_excerpt_length' , $this->oset)) ? (ploption('filtering_excerpt_length' , $this->oset)) : '20';
+    $filtering_excerpt_more = (ploption('filtering_excerpt_more' , $this->tset)) ? (ploption('filtering_excerpt_more' , $this->tset)) : '';
+        
+	if ( '' == $text ) {
+		$text = get_the_content('');
+
+		$text = strip_shortcodes( $text );
+
+		$text = apply_filters('the_content', $text);
+		$text = str_replace(']]>', ']]>', $text);
+		$text = strip_tags($text);
+		$excerpt_length = $filtering_excerpt_len;
+		$words = explode(' ', $text, $excerpt_length + 1);
+		if (count($words) > $excerpt_length) {
+			array_pop($words);
+			array_push($words, ' <a href="'.get_permalink().'">... '.$filtering_excerpt_more.'</a>');
+			$text = implode(' ', $words);
+		}
+	}
+	return $text;
+
+}
 
 
 }		

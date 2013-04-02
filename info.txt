@@ -36,6 +36,13 @@ Filtering is a great way to show off your posts or custom post types while being
 
 == Changelog ==
 
+= 1.1 =
+* Fixed permalink structure to work with default permalinks
+* Fixed excerpt where [...] showed on empty excerpt or shorter length excerpt
+* Fixed navigation class selected to change when term is selected
+* Added option to add phrase after ... on trimmed excerpts like Read More or Continue
+* Added class to Show All in navigation
+
 = 1.03 =
 * Fixed translation of Show All, Prev and Next Text
 
