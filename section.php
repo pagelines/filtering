@@ -8,7 +8,7 @@
 	Cloning: false
 	Workswith: content, template, main
 	Failswith: archive, tag, category, author
-	Version: 1.1
+	Version: 1.2
 	Demo: http://pagelines.ellenjanemoore.com/filtering-demo/
 	
 */
@@ -42,13 +42,12 @@ class Filtering extends PageLinesSection {
 		
 		jQuery(document).ready(function(){
 			
-		
+			
 			// Get image height to vertically align image to bottom
 			jQuery('.filtering-image').each(function() {
 	        	var container_height = jQuery(this).height()+'px';
 	        	jQuery(this).css('line-height', container_height);
 	        	
-       
     	});
 			
 
@@ -70,6 +69,30 @@ class Filtering extends PageLinesSection {
 		<?php
 		}
 		
+		$filtering_menu = ( ploption( 'filtering_menu', $this->oset ) ) ? ploption( 'filtering_menu', $this->oset ) : 'horizontal';
+      
+		if($filtering_menu !='horizontal') {
+		?>
+		<script>
+	 	jQuery(document).ready(function() {
+			jQuery('.filtering-nav-option').removeClass('visible-phone');
+			jQuery('.filtering-nav-wrap').addClass('hidden').removeClass('hidden-phone');
+
+		});
+		</script>
+		<?php
+		}
+		if(ploption( 'filtering_mobile', $this->oset )) {
+		?>
+		<script>
+	 	jQuery(document).ready(function() {
+			jQuery('.filtering-nav-option').removeClass('visible-phone').addClass('hidden');
+			jQuery('.filtering-nav-wrap').removeClass('hidden-phone');
+
+		});
+		</script>
+		<?php
+		}
 	}
 function section_persistent() {
 		
@@ -202,12 +225,37 @@ function section_persistent() {
 									'inputlabel' 		=> __( 'Exclude Child Categories/Terms?', 'filtering'),
 								),
 					),
-				),		
+				),	
+					'filtering_navigation' => array(
+					'type'		=> 'multi_option', 
+					'title'		=> __('Filtering Navigation Options', 'filtering'), 
+					'shortexp'	=> __('Options for type of navigation menu. By default a Horizontal Menu is shown on Desktop and Tablet Screens and a Select Menu on Smartphone Screens', 'filtering'),
+					'exp'			=> __( '', 'filtering'),
+					'selectvalues'	=> array(
+						'filtering_menu' => array(
+								'type'			=> 'select',
+								'default'		=> 'horizontal',
+								'inputlabel'	=> 'Menu Type on Desktop/Tablets (Default is Horizontal)',
+								'selectvalues' => array(
+									'horizontal' 		=> array('name' => __( 'Horizontal (default)', 'filtering') ),
+									'select' 			=> array('name' => __( 'Dropdown/Select', 'filtering') ),
+														
+								)
+							),
+						'filtering_mobile' => array(
+									'default'		=>	null,
+									'type' 			=> 'check',
+									'size'			=> 'small',
+									'inputlabel' 		=> __( 'Turn off Mobile Select Menu?', 'filtering'),
+								),
+						),
+					),
+						
 					'filtering_display' => array(
 					'type'		=> 'multi_option', 
 					'title'		=> __('Filtering Display Options', 'filtering'), 
 					'shortexp'	=> __('Options for displaying of items.', 'filtering'),
-					'exp'			=> __( 'Note on Pagination: Filtering works best without pagination. If you do want to use pagination only the categories/terms/tags found in the items on the page will show in the navigation.', 'filtering'),
+					'exp'			=> __( '', 'filtering'),
 					'selectvalues'	=> array(	
 						
 						'filtering_item_width' => array(
@@ -222,7 +270,7 @@ function section_persistent() {
 							
 							'inputlabel' 		=> __( 'Word/Phrase to use for All Items (Default is "Show All")' , 'filtering'),
 						),
-
+						
 						
 						'filtering_orderby' => array(
 								'type'			=> 'select',
@@ -668,7 +716,7 @@ function set_per_page( $query ) {
          	
          ?>
 
-        <nav class="filtering-nav-wrap">
+        <nav class="filtering-nav-wrap hidden-phone">
            <ul class="options clearfix">
 			
 		<?php 
@@ -687,11 +735,30 @@ function set_per_page( $query ) {
         </nav>
 
 
+
+        <nav class="filtering-nav-option visible-phone">
+           <select class="select">
+			
+		<?php 
+			printf('<option value="*">%s</option>' , $filtering_all_phrase);
+		
+
+			foreach( $nav_terms as $term_id ){
+				$term = get_term( $term_id, $filtering_tax ); ?>
+				<option value=".<?php echo $term->slug?>"><?php echo $term->name?></option>
+		    	
+		    <?php } ?>
+
+			</select>
+           
+        </nav>
+
+
         <div class="filtering clearfix">
         <?php
 
         // Start Filtering Container and Loop
-
+        
         while ($filtering->have_posts() ) : $filtering->the_post();
 
         	$date = get_the_date($filtering_date_format);
@@ -706,7 +773,7 @@ function set_per_page( $query ) {
 			 
          	printf( '<div class="item %s " style="width: %s; margin-right: 10px;">' , $terms_string, $filtering_width);
 
-			echo '<div class="inner-item">';
+			echo '<div class="inner-item ">';
 
 			// Draw image as long as not only_text
 			if($filtering_image != 'only_text')	{

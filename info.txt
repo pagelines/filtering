@@ -35,6 +35,10 @@ Filtering is a great way to show off your posts or custom post types while being
 
 
 == Changelog ==
+= 1.2 =
+* Added mobile dropdown menu with option to turn off
+* Added dropdown menu as a navigation option for desktop and tablet screens
+
 
 = 1.1 =
 * Fixed permalink structure to work with default permalinks
