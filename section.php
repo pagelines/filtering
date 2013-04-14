@@ -8,7 +8,7 @@
 	Cloning: false
 	Workswith: content, template, main
 	Failswith: archive, tag, category, author
-	Version: 1.2.1
+	Version: 1.2.2
 	Demo: http://pagelines.ellenjanemoore.com/filtering-demo/
 	
 */
@@ -872,13 +872,15 @@ function set_per_page( $query ) {
   	$big = 999999999; // need an unlikely integer
         if ($total_pages > 1){
           
-        $current_page = max(1, get_query_var('paged'));
+        if ( get_query_var('paged') ) { $current_page = max(1, get_query_var('paged')); }
+		else { $current_page = max(1, get_query_var('page')); }
+		
           
         echo '<div class="pagination pagination-centered">';
           
         echo paginate_links(array(
             'base' => str_replace( $big, '%#%', esc_url( get_pagenum_link( $big ) ) ),
-			'format' => '?paged=%#%',
+			'format' => '?page=%#%',
 			'current' => $current_page,
             'total' => $total_pages,
             'type' => 'list',
