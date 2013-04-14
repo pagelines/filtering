@@ -8,7 +8,7 @@
 	Cloning: false
 	Workswith: content, template, main
 	Failswith: archive, tag, category, author
-	Version: 1.2
+	Version: 1.2.1
 	Demo: http://pagelines.ellenjanemoore.com/filtering-demo/
 	
 */
@@ -27,7 +27,7 @@ class Filtering extends PageLinesSection {
 	*/
 	function section_styles(){
 		
-		wp_enqueue_script( 'isotope', $this->base_url.'/js/jquery.isotope.min.js');
+		wp_enqueue_script( 'isotope', $this->base_url.'/js/jquery.isotope.min.js', array( 'jquery' ));
 		wp_enqueue_script( 'filtering', $this->base_url.'/js/filtering.js');
 		wp_enqueue_script( 'equalize', $this->base_url.'/js/equalizecols.js');
 		wp_enqueue_script( 'easing', $this->base_url.'/js/jquery.easing.js');
