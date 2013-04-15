@@ -36,6 +36,9 @@ Filtering is a great way to show off your posts or custom post types while being
 
 == Changelog ==
 
+= 1.3 =
+* Added Persian Language
+
 = 1.2.2 =
 * Fixed pagination not advancing on static front page 
 

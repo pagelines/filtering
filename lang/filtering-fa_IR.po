@@ -1,0 +1,280 @@
+# Copyright (C) 2010 
+# This file is distributed under the same license as the  package.
+msgid ""
+msgstr ""
+"Project-Id-Version: Filtering Pagelines Section\n"
+"Report-Msgid-Bugs-To: http://wordpress.org/tag/filtering\n"
+"POT-Creation-Date: 2013-04-14 16:47:24+00:00\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2013-04-14 15:04-0500\n"
+"Last-Translator: Sourena Parham <sourenaa@gmail.com>\n"
+"Language-Team: Alefba <info@alefba.us>\n"
+"X-Generator: Poedit 1.5.5\n"
+"Language: Persian\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+
+#: section.php:180
+msgid "Filtering Setup Options"
+msgstr ""
+
+#: section.php:181
+msgid "Basic setup options for handling of filtering."
+msgstr ""
+
+#: section.php:188
+msgid "Select your post type to filter. Default is \"post.\""
+msgstr ""
+
+#: section.php:194
+msgid ""
+"Select taxonomy. Make sure the taxonomy goes with the post type, i.e. "
+"category with posts. Default is \"category\""
+msgstr ""
+
+#: section.php:200
+msgid "Enter Categories, Terms or Tags to Exclude or Include"
+msgstr ""
+
+#: section.php:201
+msgid ""
+"Use this area to either Exclude or Include Categories, Terms or Tags (Not "
+"both). If your category or term has children you can exclude them, the "
+"default is to show category/term children."
+msgstr ""
+
+#: section.php:207
+msgid ""
+"Enter Categories, Terms or Tags  ( if multiple, separate using a comma )"
+msgstr ""
+
+#: section.php:215
+msgid "Exclude (Default)"
+msgstr ""
+
+#: section.php:216
+msgid "Include"
+msgstr ""
+
+#: section.php:218
+msgid ""
+"Exclude or Include these categories, terms or tags? Default is \"Exclude.\""
+msgstr ""
+
+#: section.php:225
+msgid "Exclude Child Categories/Terms?"
+msgstr ""
+
+#: section.php:231
+msgid "Filtering Navigation Options"
+msgstr ""
+
+#: section.php:232
+msgid ""
+"Options for type of navigation menu. By default a Horizontal Menu is shown "
+"on Desktop and Tablet Screens and a Select Menu on Smartphone Screens"
+msgstr ""
+
+#: section.php:240
+msgid "Horizontal (default)"
+msgstr ""
+
+#: section.php:241
+msgid "Dropdown/Select"
+msgstr ""
+
+#: section.php:249
+msgid "Turn off Mobile Select Menu?"
+msgstr ""
+
+#: section.php:256
+msgid "Filtering Display Options"
+msgstr ""
+
+#: section.php:257
+msgid "Options for displaying of items."
+msgstr ""
+
+#: section.php:265
+msgid ""
+"Width of  each item. Default is \"250px\". Enter just the width value, px "
+"will be added for you."
+msgstr ""
+
+#: section.php:269
+msgid "Show All"
+msgstr "همه"
+
+#: section.php:271
+msgid "Word/Phrase to use for All Items (Default is \"Show All\")"
+msgstr ""
+
+#: section.php:280
+msgid "Post ID (default)"
+msgstr ""
+
+#: section.php:281
+msgid "Title"
+msgstr ""
+
+#: section.php:282
+msgid "Date"
+msgstr ""
+
+#: section.php:283
+msgid "Last Modified"
+msgstr ""
+
+#: section.php:284
+msgid "Random"
+msgstr ""
+
+#: section.php:291
+msgid "Descending (default)"
+msgstr ""
+
+#: section.php:292
+msgid "Ascending"
+msgstr ""
+
+#: section.php:294
+msgid "Select sort order"
+msgstr ""
+
+#: section.php:303
+msgid "Post Options"
+msgstr ""
+
+#: section.php:304
+msgid "Options for what to show for each post."
+msgstr ""
+
+#: section.php:311
+msgid "Show Image on Top (Default)"
+msgstr ""
+
+#: section.php:312
+msgid "Show Only the Image"
+msgstr ""
+
+#: section.php:313
+msgid "Text Only, no image"
+msgstr ""
+
+#: section.php:316
+msgid "Image Display Option (default is \"Show Image on Top\")"
+msgstr ""
+
+#: section.php:323
+msgid "Show post date and author?"
+msgstr ""
+
+#: section.php:329
+msgid "Enter the date format e.g. F j, Y (Default)"
+msgstr ""
+
+#: section.php:335
+msgid "Show the excerpt?"
+msgstr ""
+
+#: section.php:342
+msgid "Max number of words for excerpts (Default is 20)"
+msgstr ""
+
+#: section.php:347
+msgid ""
+"Continue reading phrase (... display at end of excerpt if no phrase entered)"
+msgstr ""
+
+#: section.php:355
+msgid "Extra Image Options"
+msgstr ""
+
+#: section.php:356
+msgid ""
+"By default Filtering uses the featured image from your posts and are "
+"thumbnail sized (thumbnail sizes are set in WordPress Settings -> Media). If "
+"you want your images to be another size, enter the maximum width and maximum "
+"height below. You can also upload an image to use when no featured image is "
+"present. "
+msgstr ""
+
+#: section.php:365
+msgid "Maximum Image Width"
+msgstr ""
+
+#: section.php:371
+msgid "Maximum Image Height"
+msgstr ""
+
+#: section.php:377
+msgid "Upload an image to use when no thumbnail is present (optional)"
+msgstr ""
+
+#: section.php:384
+msgid "Add A Frame To Images"
+msgstr ""
+
+#: section.php:394
+msgid "Pagination Options"
+msgstr ""
+
+#: section.php:395
+msgid ""
+"Filtering works best without pagination and the default is no pagination. "
+"Use the settings below if you want to limit the number of posts per page. "
+"Some things to consider when using pagination: </br /><br />1) Using "
+"pagination on your Blog and Custom Post Types<ul style=\"padding-left:20px;"
+"\"><li style=\"list-style: disc;\">The best way to use pagination on these "
+"pages is to set the number of items equal to or more than what is in your "
+"WordPress -> Settings -> Reading options.</li><li style=\"list-style: disc;"
+"\">If you set the number of items less than what is in your WordPress "
+"Settings then you must choose the option below to override the WordPress "
+"Settings or you will receive 404 errors on Filtering pages after page 1 or 2."
+"</li><li style=\"list-style: disc;\">Overriding WordPress Settings may "
+"affect the number of items displayed on other archive pages even though the "
+"Filtering Section is not active on that archive.</li> </ul>2) Only the "
+"categories/terms/tags that are present in the posts on the page will display "
+"in the Filtering navigation."
+msgstr ""
+
+#: section.php:401
+msgid ""
+"Number of posts to show. Leave blank to show all posts (Suggested) otherwise "
+"enter a number (best 10 or more posts per page). "
+msgstr ""
+
+#: section.php:407
+msgid ""
+"Override WordPress Post Per Page Setting for Home/Blog Page? Only use if "
+"number of items is less than in WordPress Settings -> Reading."
+msgstr ""
+
+#: section.php:413
+msgid ""
+"Override WordPress Post Per Page Setting for Custom Post Type Archive Page? "
+"Only use if number of items is less than in WordPress Settings -> Reading."
+msgstr ""
+
+#: section.php:423
+msgid "Custom CSS class"
+msgstr ""
+
+#: section.php:424
+msgid "Add a custom CSS class to this Filtering Section."
+msgstr ""
+
+#: section.php:430
+msgid ""
+"Add custom css class to this Filtering Section. Try \"custom-style\" for "
+"different navigation style."
+msgstr ""
+
+#: section.php:887
+msgid "Prev"
+msgstr "قبلی"
+
+#: section.php:888
+msgid "Next"
+msgstr "بعدی"

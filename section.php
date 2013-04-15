@@ -8,7 +8,7 @@
 	Cloning: false
 	Workswith: content, template, main
 	Failswith: archive, tag, category, author
-	Version: 1.2.2
+	Version: 1.3
 	Demo: http://pagelines.ellenjanemoore.com/filtering-demo/
 	
 */
@@ -652,8 +652,8 @@ function set_per_page( $query ) {
         $filtering_width = (ploption('filtering_item_width' , $this->oset)) ? ploption('filtering_item_width' , $this->oset).'px' : '250px';
 		$filtering_show_excerpt = (ploption('filtering_show_excerpt' , $this->oset)) ? ploption('filtering_show_excerpt' , $this->oset) : '' ;
 		$filtering_excerpt_len = (ploption('filtering_excerpt_length' , $this->oset)) ? (ploption('filtering_excerpt_length' , $this->oset)) : '20';
-        $filtering_all_phrase = (ploption('filtering_all_phrase', $this->tset)) ? (ploption('filtering_all_phrase', $this->tset)) : 'Show All';
-		$filtering_date_format = ( ploption( 'filtering_date_format', $this->tset ) ) ? ploption( 'filtering_date_format', $this->tset ) : 'F, j Y';
+        $filtering_all_phrase = (ploption('filtering_all_phrase', $this->tset)) ? (ploption('filtering_all_phrase', $this->tset)) : __( 'Show All', 'filtering' );
+        $filtering_date_format = ( ploption( 'filtering_date_format', $this->tset ) ) ? ploption( 'filtering_date_format', $this->tset ) : 'F, j Y';
 		$filtering_image = (ploption('filtering_image_type' , $this->oset)) ? ploption('filtering_image_type' , $this->oset) : 'images';
        	$filtering_image_width = (ploption('filtering_image_width' , $this->oset)) ? ploption('filtering_image_width' , $this->oset) : '';
 		$filtering_image_height = (ploption('filtering_image_height' , $this->oset)) ? ploption('filtering_image_height' , $this->oset) : '';
@@ -884,8 +884,8 @@ function set_per_page( $query ) {
 			'current' => $current_page,
             'total' => $total_pages,
             'type' => 'list',
-            'prev_text' => __('Prev'),
-            'next_text' => __('Next')
+            'prev_text' => __('Prev' , 'filtering'),
+            'next_text' => __('Next' , 'filtering')
         ));
   
     echo '</div>';
