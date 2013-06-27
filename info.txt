@@ -36,6 +36,9 @@ Filtering is a great way to show off your posts or custom post types while being
 
 == Changelog ==
 
+= 1.5 =
+* Added: Filter boxes by box set
+
 = 1.4 =
 * Fix on custom taxonomy page to not display all terms
 

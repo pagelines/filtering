@@ -8,7 +8,7 @@
 	Cloning: false
 	Workswith: content, template, main
 	Failswith: archive, tag, category, author
-	Version: 1.4
+	Version: 1.5
 	Demo: http://pagelines.ellenjanemoore.com/filtering-demo/
 	
 */
@@ -113,6 +113,7 @@ function section_persistent() {
 		// Builtin types needed.
 			$builtin = array(
 			'post',
+			'boxes',
 			
 			);
 			// All CPTs except builtins
@@ -139,7 +140,7 @@ function section_persistent() {
 
 				// Exclude some Pagelines Taxonomies
 				$exclude_taxonomies = array(
-	    			'box-sets',
+	    			
 	    			'banner-sets',
 	    			'feature-sets',
 
@@ -454,7 +455,7 @@ function section_persistent() {
 
 		
 			printf( '<div class="section-filtering %s">' , $filtering_class);
-			
+				$this->draw_navigation();
 				$this->draw_filtering();
 			
 				
@@ -657,6 +658,8 @@ function set_per_page( $query ) {
   } 
 
 
+
+
 // Draw Filtering Container
 
     function draw_filtering() {
@@ -699,30 +702,194 @@ function set_per_page( $query ) {
         $filtering_width = (ploption('filtering_item_width' , $this->oset)) ? ploption('filtering_item_width' , $this->oset).'px' : '250px';
 		$filtering_show_excerpt = (ploption('filtering_show_excerpt' , $this->oset)) ? ploption('filtering_show_excerpt' , $this->oset) : '' ;
 		$filtering_excerpt_len = (ploption('filtering_excerpt_length' , $this->oset)) ? (ploption('filtering_excerpt_length' , $this->oset)) : '20';
-        $filtering_all_phrase = (ploption('filtering_all_phrase', $this->tset)) ? (ploption('filtering_all_phrase', $this->tset)) : __( 'Show All', 'filtering' );
         $filtering_date_format = ( ploption( 'filtering_date_format', $this->tset ) ) ? ploption( 'filtering_date_format', $this->tset ) : 'F, j Y';
 		$filtering_image = (ploption('filtering_image_type' , $this->oset)) ? ploption('filtering_image_type' , $this->oset) : 'images';
-       	$filtering_image_width = (ploption('filtering_image_width' , $this->oset)) ? ploption('filtering_image_width' , $this->oset) : '';
-		$filtering_image_height = (ploption('filtering_image_height' , $this->oset)) ? ploption('filtering_image_height' , $this->oset) : '';
        	$filtering_default =  ( ploption( 'filtering_default_image', $this->oset ) ) ? ploption( 'filtering_default_image', $this->oset ) : '' ;
-       	$thumbnail_width = get_option( 'thumbnail_size_w' );
-		$thumbnail_height = get_option( 'thumbnail_size_h' );
-
-		// Set image width off settings or return thumbnail sizes
-		if((ploption('filtering_image_width' , $this->oset))) {
-			$image_width = $filtering_image_width . 'px';
-			$image_height = $filtering_image_height . 'px';
-		 	
-		}
-		else  {
-
-			$image_height = $thumbnail_height . 'px';
-			$image_width = $thumbnail_width . 'px';	
-			
-			
-		}
+       	
+		
       
-          $term_list = array();
+         
+         ?>
+
+        <div class="filtering clearfix">
+        <?php
+
+        // Start Filtering Container and Loop
+        
+        while ($filtering->have_posts() ) : $filtering->the_post();
+
+        	$date = get_the_date($filtering_date_format);
+			// Get Post Terms
+        	$terms = get_the_terms($post->ID , $filtering_tax );
+			$terms_string = '';
+	 		foreach ( $terms as $term ) :     
+      			$terms_string = $terms_string.$term->slug.' '; 
+         	endforeach;   
+         	sprintf($date);
+			// Start Drawing Item
+			 
+         	printf( '<div class="item %s " style="width: %s; margin-right: 10px;">' , $terms_string, $filtering_width);
+
+			echo '<div class="inner-item ">';
+
+			// Draw image as long as not only_text
+			if($filtering_image != 'only_text')	{
+			
+				// Image variables
+				$this->draw_image($filtering_tax, $filtering_default);
+					
+		}		
+
+	 // Draw Title as long as not only_images
+	 		
+	 if($filtering_image != 'only_images')	{
+	 			$title = esc_html(get_the_title($post->ID));
+				$box_link = implode(' ' , get_post_meta($post->ID, 'the_box_icon_link'));
+				
+				if($filtering_tax == 'box-sets') {
+					$permalink = $box_link;
+				} else {
+					$permalink = get_permalink($post->ID);
+					}
+				
+				
+	?>
+		<div class="item-info">
+			<div class="item-title">
+				<?php
+				if($permalink == null) {
+				printf('<h4>%s</a></h4>' ,  $title); 
+				} else {
+					printf('<h4><a href="%s" title="%s">%s</a></h4>' , $permalink, $title, $title); 
+				
+				}
+				?>
+			</div>
+
+	<?php
+
+		if(ploption('filtering_show_info', $this->oset)) {
+			printf('<div class="post-info">%s By ' , $date);
+			echo the_author_posts_link();
+			echo '</div>';
+		}
+
+		// Draw excerpt as long as true
+		
+    	if(ploption('filtering_show_excerpt', $this->oset)) {
+    		// Get post excerpt
+            	if($post->post_excerpt != ''){
+				$filtering_excerpt = $post->post_excerpt;
+			}elseif($filtering_tax == 'box-sets'){
+				if(get_post_meta($post->ID, 'box_more_text')) :
+				$filtering_excerpt_more = implode(' ' , get_post_meta($post->ID, 'box_more_text'));
+				else :
+				$filtering_excerpt_more = (ploption('filtering_excerpt_more' , $this->tset)) ? (ploption('filtering_excerpt_more' , $this->tset)) : '';
+				endif;
+	   			$box_link = implode(' ' , get_post_meta($post->ID, 'the_box_icon_link'));
+				$more_text = ' <a href="'. $box_link .'">... '.$filtering_excerpt_more.'</a>';
+				if($box_link== null) :
+					$filtering_excerpt = $post->post_content;
+				else :
+				$filtering_excerpt = $post->post_content .' ' . $more_text;
+				endif;
+
+			}else {
+				
+				$filtering_excerpt=$this->filtering_trim_excerpt($text);
+				}
+
+    		printf('<div class="item-excerpt">%s</div>', $filtering_excerpt );
+    		
+    	}
+
+	echo '</div>';
+	
+	 } // End Draw Title and Excerpt
+	
+	echo '</div></div>';
+
+
+	
+	endwhile; // End loop
+
+
+
+	echo '</div>';
+
+
+
+    $total_pages = $filtering->max_num_pages;
+  	$big = 999999999; // need an unlikely integer
+        if ($total_pages > 1){
+          
+        if ( get_query_var('paged') ) { $current_page = max(1, get_query_var('paged')); }
+		else { $current_page = max(1, get_query_var('page')); }
+		
+          
+        echo '<div class="pagination pagination-centered">';
+          
+        echo paginate_links(array(
+            'base' => str_replace( $big, '%#%', esc_url( get_pagenum_link( $big ) ) ),
+			'format' => '?page=%#%',
+			'current' => $current_page,
+            'total' => $total_pages,
+            'type' => 'list',
+            'prev_text' => __('Prev' , 'filtering'),
+            'next_text' => __('Next' , 'filtering')
+        ));
+  
+    echo '</div>';
+     
+    }
+	
+
+
+ } 
+
+
+
+ // End Draw Filtering
+
+ // Draw Navigation
+
+   function draw_navigation() {
+  	global $wp_query;
+    	global $post; 
+    	global $text;
+        global $filtering_ID;
+        $oset = array('post_id' => $filtering_ID);
+        $filtering_all_phrase = (ploption('filtering_all_phrase', $this->tset)) ? (ploption('filtering_all_phrase', $this->tset)) : __( 'Show All', 'filtering' );
+        
+        
+        if(is_tax()) {
+        	$filtering = $wp_query;
+        	$filtering_tax=   get_query_var( 'taxonomy' );
+        	$term = get_query_var( 'term' );
+         	$the_terms = get_term_by( 'slug',$term , $filtering_tax ); 
+        
+        
+        $the_terms_id[] = $the_terms->term_id;
+        $term_id = $the_terms->term_id;
+      
+        $termchildren = get_term_children( $term_id, get_query_var( 'taxonomy' ) );
+        
+        foreach ( $termchildren as $child ) {
+			$term = get_term_by( 'slug', $child, $filtering_tax );
+			$term_list[] = $term->term_id;
+		} 
+         $terms_merge = array_merge($the_terms_id, $termchildren);
+         foreach ( $terms_merge as $term ) {
+			$terms[] = get_term_by( 'id', $term, $filtering_tax );
+			
+		} 	
+        	
+        } else {
+        $filtering = $this->filtering_query();
+        $filtering_tax = ( ploption( 'filtering_taxonomy', $this->oset ) ) ? ploption( 'filtering_taxonomy', $this->oset ) : 'category';
+        $terms = $this->taxonomy_query();
+    }
+  	  $term_list = array();
          while ($filtering->have_posts() ) : $filtering->the_post();
 	
 			// Get Post Terms
@@ -738,7 +905,9 @@ function set_per_page( $query ) {
 	         	endforeach;   
          	endwhile;		
          	
-         $nav_terms = array();
+         
+  
+  	$nav_terms = array();
          if(is_tax()) {
          			
          		foreach($terms as $term) :
@@ -816,324 +985,68 @@ function set_per_page( $query ) {
 			</select>
            
         </nav>
-
-        <div class="filtering clearfix">
         <?php
-
-        // Start Filtering Container and Loop
-        
-        while ($filtering->have_posts() ) : $filtering->the_post();
-
-        	$date = get_the_date($filtering_date_format);
-			// Get Post Terms
-        	$terms = get_the_terms($post->ID , $filtering_tax );
-			$terms_string = '';
-	 		foreach ( $terms as $term ) :     
-      			$terms_string = $terms_string.$term->slug.' '; 
-         	endforeach;   
-         	sprintf($date);
-			// Start Drawing Item
-			 
-         	printf( '<div class="item %s " style="width: %s; margin-right: 10px;">' , $terms_string, $filtering_width);
-
-			echo '<div class="inner-item ">';
-
-			// Draw image as long as not only_text
-			if($filtering_image != 'only_text')	{
-			
-				// Image variables
-				$permalink = get_permalink($post->ID);
-				$title = get_the_title($post->ID);
-				$image = wp_get_attachment_url( get_post_thumbnail_id($post->ID) );
-				
-				printf('<div class="filtering-image center">');
-				
-				// If has featured image
-		 		if ( $image ) {
-
-		 			if((ploption('filtering_image_width' , $this->oset))) {
-				
-					printf('<a href="%s"><img src="%s" alt="%s" style="max-width: %s; max-height: %s;"/></a>' , $permalink, $image,  $title, $image_width, $image_height);			
-					} else {
-							?>
-		
-		<a href="<?php the_permalink(); ?>" title="<?php the_title_attribute(); ?>"><?php the_post_thumbnail('thumbnail'); ?></a>
-	
-		<?php
-					}
-				} else {
-
-					// If uploaded a default image
-					if($filtering_default) {
-					
-						printf('<a href="%s"><img src="%s" alt="%s" style="max-width: %s; max-height: %s;"/></a>' , $permalink, $filtering_default,  $title, $image_width, $image_height);
-
-					} else {
-
-						// Return no image if none found
-						null;
-
-				}
-		
-	 	} // End Image
-
-	 
-		echo '</div>';
-
-	 } // End Show Image
-
-	 // Draw Title as long as not only_images
-	 		
-	 if($filtering_image != 'only_images')	{
-	?>
-		<div class="item-info">
-			<div class="item-title">
-				<h4><a href="<?php the_permalink(); ?>" title="<?php the_title_attribute(); ?>"><?php the_title(); ?></a></h4>
-			
-			</div>
-
-	<?php
-
-		if(ploption('filtering_show_info', $this->oset)) {
-			printf('<div class="post-info">%s By ' , $date);
-			echo the_author_posts_link();
-			echo '</div>';
-		}
-
-		// Draw excerpt as long as true
-		
-    	if(ploption('filtering_show_excerpt', $this->oset)) {
-    		// Get post excerpt
-            	if($post->post_excerpt != ''){
-				$filtering_excerpt = $post->post_excerpt;
-			}else {
-				
-				$filtering_excerpt=$this->custom_trim_excerpt($text);
-				}
-
-    		printf('<div class="item-excerpt">%s</div>', $filtering_excerpt );
-    		
-    	}
-
-	echo '</div>';
-	
-	 } // End Draw Title and Excerpt
-	
-	echo '</div></div>';
+  }
 
 
-	
-	endwhile; // End loop
-
-
-
-	echo '</div>';
-
-
-
-    $total_pages = $filtering->max_num_pages;
-  	$big = 999999999; // need an unlikely integer
-        if ($total_pages > 1){
-          
-        if ( get_query_var('paged') ) { $current_page = max(1, get_query_var('paged')); }
-		else { $current_page = max(1, get_query_var('page')); }
-		
-          
-        echo '<div class="pagination pagination-centered">';
-          
-        echo paginate_links(array(
-            'base' => str_replace( $big, '%#%', esc_url( get_pagenum_link( $big ) ) ),
-			'format' => '?page=%#%',
-			'current' => $current_page,
-            'total' => $total_pages,
-            'type' => 'list',
-            'prev_text' => __('Prev' , 'filtering'),
-            'next_text' => __('Next' , 'filtering')
-        ));
-  
-    echo '</div>';
-     
-    }
-	
-
-
- } // End Draw Filtering
-
-  function taxonomy_archives() {
-  	global $filtering;
-
-  	$filtering_type = ( ploption( 'filtering_post_type', $this->oset ) ) ? ploption( 'filtering_post_type', $this->oset ) : 'post';
-	$filtering_tax = ( ploption( 'filtering_taxonomy', $this->oset ) ) ? ploption( 'filtering_taxonomy', $this->oset ) : 'category';
-	$filtering_orderby = ( ploption( 'filtering_orderby', $this->oset ) ) ? ploption( 'filtering_orderby', $this->oset ) : 'ID';
-	$filtering_order = ( ploption( 'filtering_order', $this->oset ) ) ? ploption( 'filtering_order', $this->oset ) : 'DESC';
-	$filtering_number = ( ploption( 'filtering_number', $this->oset ) ) ? ploption( 'filtering_number', $this->oset ) : null;
-     $term_name = get_query_var( $filtering_tax ); 
-     $term = get_term_by('name', $term_name, $filtering_tax);  
-echo 'The term ID is: '. $term->term_id; 
-      	if(ploption( 'filtering_number', $this->oset ) ) {
-      		$filtering_item_number = $filtering_number;
-
-      	} else {
-      		$filtering_item_number = -1;
-      	}	
-    if ( get_query_var('paged') ) { $paged = get_query_var('paged'); }
-	elseif ( get_query_var('page') ) { $paged = get_query_var('page'); }
-	else { $paged = 1; }  	
-	  	$args = array(
-		'post_type' => $filtering_type,
-		'posts_per_page' => $filtering_item_number,
-	 	'orderby'=>$filtering_orderby ,
-	 	'order'=> $filtering_order,
-	 	'paged' => $paged,
-		'tax_query' => array(
-			array(
-				'taxonomy' => $filtering_tax,
-				'field' => 'name',
-				'terms' => $term_name
-				
-				
-			)
-		)
-	);
-	$query = new WP_Query( $args );
-
-	// Option Variables
-        $filtering_width = (ploption('filtering_item_width' , $this->oset)) ? ploption('filtering_item_width' , $this->oset).'px' : '250px';
-		$filtering_show_excerpt = (ploption('filtering_show_excerpt' , $this->oset)) ? ploption('filtering_show_excerpt' , $this->oset) : '' ;
-		$filtering_excerpt_len = (ploption('filtering_excerpt_length' , $this->oset)) ? (ploption('filtering_excerpt_length' , $this->oset)) : '20';
-        $filtering_all_phrase = (ploption('filtering_all_phrase', $this->tset)) ? (ploption('filtering_all_phrase', $this->tset)) : __( 'Show All', 'filtering' );
-        $filtering_date_format = ( ploption( 'filtering_date_format', $this->tset ) ) ? ploption( 'filtering_date_format', $this->tset ) : 'F, j Y';
-		$filtering_image = (ploption('filtering_image_type' , $this->oset)) ? ploption('filtering_image_type' , $this->oset) : 'images';
-       	$filtering_image_width = (ploption('filtering_image_width' , $this->oset)) ? ploption('filtering_image_width' , $this->oset) : '';
+ function draw_image($filtering_tax, $filtering_default) {
+ 	
+ 	global $post;
+ 
+ 	// Image variables
+ 	$filtering_image_width = (ploption('filtering_image_width' , $this->oset)) ? ploption('filtering_image_width' , $this->oset) : '';
 		$filtering_image_height = (ploption('filtering_image_height' , $this->oset)) ? ploption('filtering_image_height' , $this->oset) : '';
-       	$filtering_default =  ( ploption( 'filtering_default_image', $this->oset ) ) ? ploption( 'filtering_default_image', $this->oset ) : '' ;
        	$thumbnail_width = get_option( 'thumbnail_size_w' );
 		$thumbnail_height = get_option( 'thumbnail_size_h' );
 
-		// Set image width off settings or return thumbnail sizes
-		if((ploption('filtering_image_width' , $this->oset))) {
-			$image_width = $filtering_image_width . 'px';
-			$image_height = $filtering_image_height . 'px';
-		 	
+ 				// Set image width off settings or return thumbnail sizes
+		if($filtering_image_width > 0) {
+			$image_width = $filtering_image_width . 'px';	
+		}
+		else  {	
+			$image_width = $thumbnail_width . 'px';		
+		}
+		if($filtering_image_height > 0) {	
+			$image_height = $filtering_image_height . 'px';		 	
 		}
 		else  {
-
-			$image_height = $thumbnail_height . 'px';
-			$image_width = $thumbnail_width . 'px';	
-			
+			$image_height = $thumbnail_height . 'px';			
 			
 		}
 
-		        $term_list = array();
-         while ($query->have_posts() ) : $query->the_post();
-	
-			// Get Post Terms
-        	$post_terms = get_the_terms($post->ID , $filtering_tax );
-
-		 		foreach ( $post_terms as $term ) :   
-	      			
-	      			if( !in_array( $term->term_id, $term_list ) ){
-	      				$term_list[] = $term->term_id;
-	    				}
-	    				
-	         	endforeach;   
-         	endwhile;
-         	
-
-         
-         
-         	
-         ?>
-
-        <nav class="filtering-nav-wrap hidden-phone">
-           <ul class="options clearfix">
+			$title = esc_html(get_the_title($post->ID));
+			$box_image = get_post_meta($post->ID,'the_box_icon');
+			$box_link = implode(' ' , get_post_meta($post->ID, 'the_box_icon_link'));
 			
-		<?php 
-			printf('<li><a href="#show-all" data-filter="*" class="selected">%s</a></li>' , $filtering_all_phrase);
-		
-
-			foreach( $term_list as $term_id ){
-				$term = get_term( $term_id, $filtering_tax ); ?>
-
-		    	<li><a href="#" data-filter=".<?php echo $term->slug?>"><?php echo $term->name?></a></li>
-
-		    <?php } ?>
-
-			</ul>
-           
-        </nav>
-
-
-
-        <nav class="filtering-nav-option visible-phone">
-           <select class="select">
-			
-		<?php 
-			printf('<option value="*">%s</option>' , $filtering_all_phrase);
-		
-
-			foreach( $term_list as $term_id ){
-				$term = get_term( $term_id, $filtering_tax ); ?>
-				<option value=".<?php echo $term->slug?>"><?php echo $term->name?></option>
-		    	
-		    <?php } ?>
-
-			</select>
-           
-        </nav>
-
-
-        <div class="filtering clearfix">
-        <?php
-
-        // Start Filtering Container and Loop
-        
-        while ($query->have_posts() ) : $query->the_post();
-
-        	$date = get_the_date($filtering_date_format);
-			// Get Post Terms
-        	$terms = get_the_terms($post->ID , $filtering_tax );
-			$terms_string = '';
-	 		foreach ( $terms as $term ) :     
-      			$terms_string = $terms_string.$term->slug.' '; 
-         	endforeach;   
-         	sprintf($date);
-			// Start Drawing Item
-			 
-         	printf( '<div class="item %s " style="width: %s; margin-right: 10px;">' , $terms_string, $filtering_width);
-
-			echo '<div class="inner-item ">';
-
-			// Draw image as long as not only_text
-			if($filtering_image != 'only_text')	{
-			
-				// Image variables
+			if($filtering_tax == 'box-sets') {
+				$image = implode('', $box_image);
+				$permalink = $box_link;
+			} else {
 				$permalink = get_permalink($post->ID);
-				$title = get_the_title($post->ID);
 				$image = wp_get_attachment_url( get_post_thumbnail_id($post->ID) );
-				
-				printf('<div class="filtering-image center">');
+			}
+			
+			
+			printf('<div class="filtering-image center">');
 				
 				// If has featured image
-		 		if ( $image ) {
+		 if ( $image ) :
 
-		 			if((ploption('filtering_image_width' , $this->oset))) {
-				
-					printf('<a href="%s"><img src="%s" alt="%s" style="max-width: %s; max-height: %s;"/></a>' , $permalink, $image,  $title, $image_width, $image_height);			
+		 			if($permalink == null) {
+					printf('<img src="%s" alt="%s" style="max-width: %s; max-height: %s;"/>' , $image,  $title, $image_width, $image_height);			
 					} else {
-							?>
-		
-		<a href="<?php the_permalink(); ?>" title="<?php the_title_attribute(); ?>"><?php the_post_thumbnail('thumbnail'); ?></a>
-	
-		<?php
+						printf('<a href="%s"><img src="%s" alt="%s" style="max-width: %s; max-height: %s;"/></a>' , $permalink, $image,  $title, $image_width, $image_height);			
+					
 					}
-				} else {
+		 else :
 
 					// If uploaded a default image
 					if($filtering_default) {
-					
-						printf('<a href="%s"><img src="%s" alt="%s" style="max-width: %s; max-height: %s;"/></a>' , $permalink, $filtering_default,  $title, $image_width, $image_height);
-
+						if($permalink == null) :
+							printf('<img src="%s" alt="%s" style="max-width: %s; max-height: %s;"/>' , $filtering_default,  $title, $image_width, $image_height);
+						else: 
+							printf('<a href="%s"><img src="%s" alt="%s" style="max-width: %s; max-height: %s;"/></a>' , $permalink, $filtering_default,  $title, $image_width, $image_height);
+						endif;
 					} else {
 
 						// Return no image if none found
@@ -1141,111 +1054,44 @@ echo 'The term ID is: '. $term->term_id;
 
 				}
 		
-	 	} // End Image
+	 	endif; // End Image
 
 	 
 		echo '</div>';
 
-	 } // End Show Image
+	 
 
-	 // Draw Title as long as not only_images
-	 		
-	 if($filtering_image != 'only_images')	{
-	?>
-		<div class="item-info">
-			<div class="item-title">
-				<h4><a href="<?php the_permalink(); ?>" title="<?php the_title_attribute(); ?>"><?php the_title(); ?></a></h4>
-			
-			</div>
-
-	<?php
-
-		if(ploption('filtering_show_info', $this->oset)) {
-			printf('<div class="post-info">%s By ' , $date);
-			echo the_author_posts_link();
-			echo '</div>';
-		}
-
-		// Draw excerpt as long as true
-		
-    	if(ploption('filtering_show_excerpt', $this->oset)) {
-    		// Get post excerpt
-            	if($post->post_excerpt != ''){
-				$filtering_excerpt = $post->post_excerpt;
-			}else {
-				
-				$filtering_excerpt=$this->custom_trim_excerpt($text);
-				}
-
-    		printf('<div class="item-excerpt">%s</div>', $filtering_excerpt );
-    		
-    	}
-
-	echo '</div>';
-	
-	 } // End Draw Title and Excerpt
-	
-	echo '</div></div>';
-
-
-	
-	endwhile; // End loop
-
-
-
-	echo '</div>';
-
-
-
-    $total_pages = $filtering->max_num_pages;
-  	$big = 999999999; // need an unlikely integer
-        if ($total_pages > 1){
-          
-        if ( get_query_var('paged') ) { $current_page = max(1, get_query_var('paged')); }
-		else { $current_page = max(1, get_query_var('page')); }
-		
-          
-        echo '<div class="pagination pagination-centered">';
-          
-        echo paginate_links(array(
-            'base' => str_replace( $big, '%#%', esc_url( get_pagenum_link( $big ) ) ),
-			'format' => '?page=%#%',
-			'current' => $current_page,
-            'total' => $total_pages,
-            'type' => 'list',
-            'prev_text' => __('Prev' , 'filtering'),
-            'next_text' => __('Next' , 'filtering')
-        ));
+ }
   
-    echo '</div>';
-     
-    }
-  }
 
-function custom_trim_excerpt($text) { // Fakes an excerpt if needed
-global $post;
-	$filtering_excerpt_len = (ploption('filtering_excerpt_length' , $this->oset)) ? (ploption('filtering_excerpt_length' , $this->oset)) : '20';
-    $filtering_excerpt_more = (ploption('filtering_excerpt_more' , $this->tset)) ? (ploption('filtering_excerpt_more' , $this->tset)) : '';
-        
-	if ( '' == $text ) {
-		$text = get_the_content('');
 
-		$text = strip_shortcodes( $text );
 
-		$text = apply_filters('the_content', $text);
-		$text = str_replace(']]>', ']]>', $text);
-		$text = strip_tags($text);
-		$excerpt_length = $filtering_excerpt_len;
-		$words = explode(' ', $text, $excerpt_length + 1);
-		if (count($words) > $excerpt_length) {
-			array_pop($words);
-			array_push($words, ' <a href="'.get_permalink().'">... '.$filtering_excerpt_more.'</a>');
-			$text = implode(' ', $words);
+	function filtering_trim_excerpt($text) { // Fakes an excerpt if needed
+		global $post;
+		$filtering_excerpt_len = (ploption('filtering_excerpt_length' , $this->oset)) ? (ploption('filtering_excerpt_length' , $this->oset)) : '20';
+	    $filtering_excerpt_more = (ploption('filtering_excerpt_more' , $this->tset)) ? (ploption('filtering_excerpt_more' , $this->tset)) : '';
+	   	$permalink = get_permalink($post->ID);
+				
+
+		if ( '' == $text ) {
+			$text = get_the_content('');
+
+			$text = strip_shortcodes( $text );
+
+			$text = apply_filters('the_content', $text);
+			$text = str_replace(']]>', ']]>', $text);
+			$text = strip_tags($text);
+			$excerpt_length = $filtering_excerpt_len;
+			$words = explode(' ', $text, $excerpt_length + 1);
+			if (count($words) > $excerpt_length) {
+				array_pop($words);
+				array_push($words, ' <a href="'. $permalink .'">... '.$filtering_excerpt_more.'</a>');
+				$text = implode(' ', $words);
+			}
 		}
-	}
-	return $text;
+		return $text;
 
-}
+	}
 
 
 }		
