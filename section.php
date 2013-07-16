@@ -8,7 +8,7 @@
 	Cloning: false
 	Workswith: content, template, main
 	Failswith: archive, tag, category, author
-	Version: 1.5
+	Version: 1.5.1
 	Demo: http://pagelines.ellenjanemoore.com/filtering-demo/
 	
 */
@@ -34,6 +34,7 @@ class Filtering extends PageLinesSection {
 		
 		}
 
+
 	function section_head() {
 		
 
@@ -58,7 +59,7 @@ class Filtering extends PageLinesSection {
 <?php
 
 		// Add frame around image if checked
-		if(ploption( 'filtering_thumb_frame', $this->oset )) {
+		if($this->opt( 'filtering_thumb_frame', $this->oset )) {
 		?>
 		<script>
 	 	jQuery(document).ready(function() {
@@ -69,7 +70,7 @@ class Filtering extends PageLinesSection {
 		<?php
 		}
 		
-		$filtering_menu = ( ploption( 'filtering_menu', $this->oset ) ) ? ploption( 'filtering_menu', $this->oset ) : 'horizontal';
+		$filtering_menu = ( $this->opt( 'filtering_menu', $this->oset ) ) ? $this->opt( 'filtering_menu', $this->oset ) : 'horizontal';
       
 		if($filtering_menu !='horizontal') {
 		?>
@@ -82,7 +83,7 @@ class Filtering extends PageLinesSection {
 		</script>
 		<?php
 		}
-		if(ploption( 'filtering_mobile', $this->oset )) {
+		if($this->opt( 'filtering_mobile', $this->oset )) {
 		?>
 		<script>
 	 	jQuery(document).ready(function() {
@@ -450,7 +451,7 @@ function section_persistent() {
         global $post; global $filtering_ID;
         $oset = array('post_id' => $filtering_ID);
         
-        $filtering_class = ( ploption( 'filtering_class', $this->oset ) ) ? ploption( 'filtering_class', $this->oset ) : null;
+        $filtering_class = ( $this->opt( 'filtering_class', $this->oset ) ) ? $this->opt( 'filtering_class', $this->oset ) : null;
 				
 
 		
@@ -475,19 +476,19 @@ function set_per_page( $query ) {
 		return $query;
 	}else {
 
-		if (ploption( 'filtering_override_home')) {	
+		if ($this->opt( 'filtering_override_home')) {	
 	    	if($query->is_home()&&($query === $wp_query)){
-	    		$query->set( 'posts_per_page',  ploption( 'filtering_number'));
+	    		$query->set( 'posts_per_page',  $this->opt( 'filtering_number'));
 	    		return $query;
 	    	}
 		}
-		if (ploption( 'filtering_override_archive')) {	
+		if ($this->opt( 'filtering_override_archive')) {	
 	    	if($query->is_post_type_archive()&&($query === $wp_query)){
-	    		$query->set( 'posts_per_page',  ploption( 'filtering_number'));
+	    		$query->set( 'posts_per_page',  $this->opt( 'filtering_number'));
 	    		return $query;
 	    	}
 	    	if($query->is_tax()&&($query === $wp_query)){
-	    		$query->set( 'posts_per_page',  ploption( 'filtering_number'));
+	    		$query->set( 'posts_per_page',  $this->opt( 'filtering_number'));
 	    		return $query;
 	    	}
 		}
@@ -500,9 +501,9 @@ function set_per_page( $query ) {
   	function taxonomy_query(){
   	 	global $filtering_ID;
         $oset = array('post_id' => $filtering_ID);
-  		$filtering_tax = ( ploption( 'filtering_taxonomy', $this->oset ) ) ? ploption( 'filtering_taxonomy', $this->oset ) : 'category';
-		$filtering_terms_type = ( ploption( 'filtering_terms_type', $this->oset ) ) ? ploption( 'filtering_terms_type', $this->oset ) : 'exclude';
-     	$filtering_terms = ( ploption( 'filtering_terms', $this->oset ) ) ? ploption( 'filtering_terms', $this->oset ) : '';
+  		$filtering_tax = ( $this->opt( 'filtering_taxonomy', $this->oset ) ) ? $this->opt( 'filtering_taxonomy', $this->oset ) : 'category';
+		$filtering_terms_type = ( $this->opt( 'filtering_terms_type', $this->oset ) ) ? $this->opt( 'filtering_terms_type', $this->oset ) : 'exclude';
+     	$filtering_terms = ( $this->opt( 'filtering_terms', $this->oset ) ) ? $this->opt( 'filtering_terms', $this->oset ) : '';
       	 
 
 
@@ -539,7 +540,7 @@ function set_per_page( $query ) {
              }	
             	$terms_list= implode(", ", $term_array); 
             // See if want child terms in query too
-            if(ploption('filtering_children', $this->oset )) {
+            if($this->opt('filtering_children', $this->oset )) {
             	$these_terms = $terms_list;
         	} else {
         		
@@ -553,13 +554,13 @@ function set_per_page( $query ) {
         	
         // See if terms are to be excluded or included and whether to show children
         	if($filtering_terms_type != 'exclude'){
-        		if(ploption('filtering_children', $this->oset )) {
+        		if($this->opt('filtering_children', $this->oset )) {
             	$args2 = array('include'=>$these_terms, 'parent'=>0);
             	} else {
             		$args2 = array('include'=>$these_terms);
             	}
         	} else {
-        		if(ploption('filtering_children', $this->oset )) {
+        		if($this->opt('filtering_children', $this->oset )) {
             	$args2 = array('exclude_tree'=>$these_terms);
             	} else {
             		$args2 = array('exclude'=>$these_terms);
@@ -567,7 +568,7 @@ function set_per_page( $query ) {
         	}
 	    	
 	    } else {
-	    	if(ploption('filtering_children', $this->oset )) {
+	    	if($this->opt('filtering_children', $this->oset )) {
             	$args2 = array('parent'=>0);
             	} else {
             		$args2 = null;
@@ -587,7 +588,7 @@ function set_per_page( $query ) {
   function filtering_query(){
 
   	global $filtering_ID;
-  	$filtering_tax = ( ploption( 'filtering_taxonomy', $this->oset ) ) ? ploption( 'filtering_taxonomy', $this->oset ) : 'category';
+  	$filtering_tax = ( $this->opt( 'filtering_taxonomy', $this->oset ) ) ? $this->opt( 'filtering_taxonomy', $this->oset ) : 'category';
 		
         $oset = array('post_id' => $filtering_ID);
 
@@ -596,13 +597,13 @@ function set_per_page( $query ) {
     
   	 // Query Variables
 
-    	$filtering_type = ( ploption( 'filtering_post_type', $this->oset ) ) ? ploption( 'filtering_post_type', $this->oset ) : 'post';
-		$filtering_tax = ( ploption( 'filtering_taxonomy', $this->oset ) ) ? ploption( 'filtering_taxonomy', $this->oset ) : 'category';
-		$filtering_orderby = ( ploption( 'filtering_orderby', $this->oset ) ) ? ploption( 'filtering_orderby', $this->oset ) : 'ID';
-		$filtering_order = ( ploption( 'filtering_order', $this->oset ) ) ? ploption( 'filtering_order', $this->oset ) : 'DESC';
-		$filtering_number = ( ploption( 'filtering_number', $this->oset ) ) ? ploption( 'filtering_number', $this->oset ) : null;
+    	$filtering_type = ( $this->opt( 'filtering_post_type', $this->oset ) ) ? $this->opt( 'filtering_post_type', $this->oset ) : 'post';
+		$filtering_tax = ( $this->opt( 'filtering_taxonomy', $this->oset ) ) ? $this->opt( 'filtering_taxonomy', $this->oset ) : 'category';
+		$filtering_orderby = ( $this->opt( 'filtering_orderby', $this->oset ) ) ? $this->opt( 'filtering_orderby', $this->oset ) : 'ID';
+		$filtering_order = ( $this->opt( 'filtering_order', $this->oset ) ) ? $this->opt( 'filtering_order', $this->oset ) : 'DESC';
+		$filtering_number = ( $this->opt( 'filtering_number', $this->oset ) ) ? $this->opt( 'filtering_number', $this->oset ) : null;
       	
-      	if(ploption( 'filtering_number', $this->oset ) ) {
+      	if($this->opt( 'filtering_number', $this->oset ) ) {
       		$filtering_item_number = $filtering_number;
 
       	} else {
@@ -620,7 +621,7 @@ function set_per_page( $query ) {
 
 	
 
-	if(ploption('filtering_children', $this->oset)) {
+	if($this->opt('filtering_children', $this->oset)) {
 		$include_children = false;
 		}else {
 			$include_children = true;
@@ -693,18 +694,18 @@ function set_per_page( $query ) {
         	
         } else {
         $filtering = $this->filtering_query();
-        $filtering_tax = ( ploption( 'filtering_taxonomy', $this->oset ) ) ? ploption( 'filtering_taxonomy', $this->oset ) : 'category';
+        $filtering_tax = ( $this->opt( 'filtering_taxonomy', $this->oset ) ) ? $this->opt( 'filtering_taxonomy', $this->oset ) : 'category';
         $terms = $this->taxonomy_query();
     }
         
         // Option Variables
 
-        $filtering_width = (ploption('filtering_item_width' , $this->oset)) ? ploption('filtering_item_width' , $this->oset).'px' : '250px';
-		$filtering_show_excerpt = (ploption('filtering_show_excerpt' , $this->oset)) ? ploption('filtering_show_excerpt' , $this->oset) : '' ;
-		$filtering_excerpt_len = (ploption('filtering_excerpt_length' , $this->oset)) ? (ploption('filtering_excerpt_length' , $this->oset)) : '20';
-        $filtering_date_format = ( ploption( 'filtering_date_format', $this->tset ) ) ? ploption( 'filtering_date_format', $this->tset ) : 'F, j Y';
-		$filtering_image = (ploption('filtering_image_type' , $this->oset)) ? ploption('filtering_image_type' , $this->oset) : 'images';
-       	$filtering_default =  ( ploption( 'filtering_default_image', $this->oset ) ) ? ploption( 'filtering_default_image', $this->oset ) : '' ;
+        $filtering_width = ($this->opt('filtering_item_width' , $this->oset)) ? $this->opt('filtering_item_width' , $this->oset).'px' : '250px';
+		$filtering_show_excerpt = ($this->opt('filtering_show_excerpt' , $this->oset)) ? $this->opt('filtering_show_excerpt' , $this->oset) : '' ;
+		$filtering_excerpt_len = ($this->opt('filtering_excerpt_length' , $this->oset)) ? ($this->opt('filtering_excerpt_length' , $this->oset)) : '20';
+        $filtering_date_format = ( $this->opt( 'filtering_date_format', $this->tset ) ) ? $this->opt( 'filtering_date_format', $this->tset ) : 'F, j Y';
+		$filtering_image = ($this->opt('filtering_image_type' , $this->oset)) ? $this->opt('filtering_image_type' , $this->oset) : 'images';
+       	$filtering_default =  ( $this->opt( 'filtering_default_image', $this->oset ) ) ? $this->opt( 'filtering_default_image', $this->oset ) : '' ;
        	
 		
       
@@ -768,7 +769,7 @@ function set_per_page( $query ) {
 
 	<?php
 
-		if(ploption('filtering_show_info', $this->oset)) {
+		if($this->opt('filtering_show_info', $this->oset)) {
 			printf('<div class="post-info">%s By ' , $date);
 			echo the_author_posts_link();
 			echo '</div>';
@@ -776,7 +777,7 @@ function set_per_page( $query ) {
 
 		// Draw excerpt as long as true
 		
-    	if(ploption('filtering_show_excerpt', $this->oset)) {
+    	if($this->opt('filtering_show_excerpt', $this->oset)) {
     		// Get post excerpt
             	if($post->post_excerpt != ''){
 				$filtering_excerpt = $post->post_excerpt;
@@ -784,14 +785,14 @@ function set_per_page( $query ) {
 				if(get_post_meta($post->ID, 'box_more_text')) :
 				$filtering_excerpt_more = implode(' ' , get_post_meta($post->ID, 'box_more_text'));
 				else :
-				$filtering_excerpt_more = (ploption('filtering_excerpt_more' , $this->tset)) ? (ploption('filtering_excerpt_more' , $this->tset)) : '';
+				$filtering_excerpt_more = ($this->opt('filtering_excerpt_more' , $this->tset)) ? ($this->opt('filtering_excerpt_more' , $this->tset)) : '';
 				endif;
 	   			$box_link = implode(' ' , get_post_meta($post->ID, 'the_box_icon_link'));
 				$more_text = ' <a href="'. $box_link .'">... '.$filtering_excerpt_more.'</a>';
 				if($box_link== null) :
-					$filtering_excerpt = $post->post_content;
+					$filtering_excerpt = do_shortcode($post->post_content);
 				else :
-				$filtering_excerpt = $post->post_content .' ' . $more_text;
+				$filtering_excerpt = do_shortcode($post->post_content) .' ' . $more_text;
 				endif;
 
 			}else {
@@ -859,7 +860,7 @@ function set_per_page( $query ) {
     	global $text;
         global $filtering_ID;
         $oset = array('post_id' => $filtering_ID);
-        $filtering_all_phrase = (ploption('filtering_all_phrase', $this->tset)) ? (ploption('filtering_all_phrase', $this->tset)) : __( 'Show All', 'filtering' );
+        $filtering_all_phrase = ($this->opt('filtering_all_phrase', $this->tset)) ? ($this->opt('filtering_all_phrase', $this->tset)) : __( 'Show All', 'filtering' );
         
         
         if(is_tax()) {
@@ -886,7 +887,7 @@ function set_per_page( $query ) {
         	
         } else {
         $filtering = $this->filtering_query();
-        $filtering_tax = ( ploption( 'filtering_taxonomy', $this->oset ) ) ? ploption( 'filtering_taxonomy', $this->oset ) : 'category';
+        $filtering_tax = ( $this->opt( 'filtering_taxonomy', $this->oset ) ) ? $this->opt( 'filtering_taxonomy', $this->oset ) : 'category';
         $terms = $this->taxonomy_query();
     }
   	  $term_list = array();
@@ -924,7 +925,7 @@ function set_per_page( $query ) {
          $parent = $term->parent;
          if( in_array( $term->term_id, $term_list ) ){
          			
-         	if(ploption('filtering_children', $this->oset)) {
+         	if($this->opt('filtering_children', $this->oset)) {
          		if($term->parent > 0) {
          			 null;
          		} else {
@@ -994,8 +995,8 @@ function set_per_page( $query ) {
  	global $post;
  
  	// Image variables
- 	$filtering_image_width = (ploption('filtering_image_width' , $this->oset)) ? ploption('filtering_image_width' , $this->oset) : '';
-		$filtering_image_height = (ploption('filtering_image_height' , $this->oset)) ? ploption('filtering_image_height' , $this->oset) : '';
+ 	$filtering_image_width = ($this->opt('filtering_image_width' , $this->oset)) ? $this->opt('filtering_image_width' , $this->oset) : '';
+		$filtering_image_height = ($this->opt('filtering_image_height' , $this->oset)) ? $this->opt('filtering_image_height' , $this->oset) : '';
        	$thumbnail_width = get_option( 'thumbnail_size_w' );
 		$thumbnail_height = get_option( 'thumbnail_size_h' );
 
@@ -1068,8 +1069,8 @@ function set_per_page( $query ) {
 
 	function filtering_trim_excerpt($text) { // Fakes an excerpt if needed
 		global $post;
-		$filtering_excerpt_len = (ploption('filtering_excerpt_length' , $this->oset)) ? (ploption('filtering_excerpt_length' , $this->oset)) : '20';
-	    $filtering_excerpt_more = (ploption('filtering_excerpt_more' , $this->tset)) ? (ploption('filtering_excerpt_more' , $this->tset)) : '';
+		$filtering_excerpt_len = ($this->opt('filtering_excerpt_length' , $this->oset)) ? ($this->opt('filtering_excerpt_length' , $this->oset)) : '20';
+	    $filtering_excerpt_more = ($this->opt('filtering_excerpt_more' , $this->tset)) ? ($this->opt('filtering_excerpt_more' , $this->tset)) : '';
 	   	$permalink = get_permalink($post->ID);
 				
 
