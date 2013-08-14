@@ -9,6 +9,7 @@
 	Workswith: content, template, main
 	Failswith: archive, tag, category, author
 	Version: 1.6
+	v3: true
 	Demo: http://pagelines.ellenjanemoore.com/filtering-demo/
 	
 */
