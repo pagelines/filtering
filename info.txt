@@ -36,8 +36,8 @@ Filtering is a great way to show off your posts or custom post types while being
 
 == Changelog ==
 
-= 1.5.1 =
-* Shortcodes display in boxes
+= 1.6 =
+* DMS Ready
 
 = 1.5 =
 * Added: Filter boxes by box set

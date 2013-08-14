@@ -8,7 +8,7 @@
 	Cloning: false
 	Workswith: content, template, main
 	Failswith: archive, tag, category, author
-	Version: 1.5.1
+	Version: 1.6
 	Demo: http://pagelines.ellenjanemoore.com/filtering-demo/
 	
 */
@@ -25,25 +25,27 @@ class Filtering extends PageLinesSection {
 	/**
 	* Load js
 	*/
-	function section_styles(){
+	const version = '1.6';
+
+function section_styles(){
 		
-		wp_enqueue_script( 'isotope', $this->base_url.'/js/jquery.isotope.min.js', array( 'jquery' ));
-		wp_enqueue_script( 'filtering', $this->base_url.'/js/filtering.js');
-		wp_enqueue_script( 'equalize', $this->base_url.'/js/equalizecols.js');
-		wp_enqueue_script( 'easing', $this->base_url.'/js/jquery.easing.js');
+		wp_enqueue_script( 'isotope', $this->base_url.'/js/jquery.isotope.min.js', array( 'jquery' ), self::version, true);
+		wp_enqueue_script( 'filtering', $this->base_url.'/js/filtering.js',array( 'jquery' ), self::version, true);
+		wp_enqueue_script( 'equalize', $this->base_url.'/js/equalizecols.js',array( 'jquery' ), self::version, true);
+		wp_enqueue_script( 'easing', $this->base_url.'/js/jquery.easing.js',array( 'jquery' ), self::version, true);
 		
 		}
 
 
 	function section_head() {
 		
-
+	
 		?>
 		<script>
 		
 		jQuery(document).ready(function(){
 			
-			
+			jQuery('body').addClass('filtering-section');
 			// Get image height to vertically align image to bottom
 			jQuery('.filtering-image').each(function() {
 	        	var container_height = jQuery(this).height()+'px';
@@ -95,28 +97,412 @@ class Filtering extends PageLinesSection {
 		<?php
 		}
 	}
-function section_persistent() {
-		
-	 	add_action( 'pre_get_posts', array(&$this, 'set_per_page'), 1 );
+	function section_persistent() {
 
-}
+		if(function_exists('pl_has_editor')){
+			
+			return;
+
+		} else {
+		   add_action( 'pre_get_posts', array(&$this, 'set_per_page'), 1 );
+		   }
+		
+	 	
+
+	}
 	
 
 
-
-
-
-	function section_optionator( $settings ){
+	function set_per_page( $query ) {
+    	
+    	
+    // Fixes pagination issue on archive pages
+		global $wp_query;
 		
-		$settings = wp_parse_args($settings, $this->optionator_default);
+		
 
+	if($query->is_page()&&($query === $wp_query)) {
+		return $query;
+	}else {
+		if ($this->opt( 'filtering_override_home')) {	
+	    	if($query->is_home()&&($query === $wp_query)){
+	    		$query->set( 'posts_per_page',  $this->opt( 'filtering_number'));
+	    		return $query;
+
+	    	}
+		}
+		if ($this->opt( 'filtering_override_archive')) {	
+	    	if($query->is_post_type_archive()&&($query === $wp_query)){
+	    		$query->set( 'posts_per_page',  $this->opt( 'filtering_number'));
+	    		return $query;
+	    	}
+	    	if($query->is_tax()&&($query === $wp_query)){
+	    		$query->set( 'posts_per_page',  $this->opt( 'filtering_number'));
+	    		return $query;
+	    	}
+		}
+	}
+
+	
+}
+	function section_opts(){
+		
+		
+		$wp_per_page = get_option('posts_per_page');
 		$post_type_array = array();
+		if(post_type_exists('boxes')) {
 		// Builtin types needed.
 			$builtin = array(
 			'post',
 			'boxes',
 			
 			);
+		} else {
+			$builtin = array(
+			'post',
+			
+			
+			);
+		}	
+			// All CPTs except builtins
+			$cpts = get_post_types( array(
+			'public'   => true,
+			'_builtin' => false
+			) );
+			
+			// Merge Builtin types and 'important' CPTs to resulting array to use as argument.
+			$post_types = array_merge($builtin, $cpts);
+		
+			if(!empty($post_types)){
+	
+					foreach($post_types as $post_type){
+	
+						$post_type_array[$post_type] = array(
+							'name' => $post_type,
+							'label' => $post_type
+						);
+					}
+				}
+
+				// Get Taxonomies
+
+				// Exclude some Pagelines Taxonomies
+				$exclude_taxonomies = array(
+	    			
+	    			'banner-sets',
+	    			'feature-sets',
+	    			'accordion-sets',
+
+				);
+				// Builtin types needed.
+				$builtin = array(
+				    'category',
+				    'post_tag'
+				    
+				);
+				// All Taxonomies.
+				$taxs = get_taxonomies( array(
+				    'public'   => true,
+				    '_builtin' => false
+				) );
+				// remove Excluded Taxonomies from All Taxonomies.
+				foreach($exclude_taxonomies as $exclude_taxonomy)
+				    unset($taxs[$exclude_taxonomy]);
+				// Merge Builtin types and 'important' Taxonomies to resulting array to use as argument.
+				$taxonomies = array_merge($builtin, $taxs);	
+	
+			$taxonomies_array = array();	
+	
+				if  ($taxonomies) {
+  				foreach ($taxonomies  as $taxonomy ) {
+    				$taxonomy_array[$taxonomy] = array(
+ 
+    						'name' => $taxonomy,
+							'label' => $taxonomy
+						);
+					}		
+				}
+			$options = array();	
+		
+				$options[] = array(
+		            'key'           => 'filtering_setup',
+
+					'type'		=> 'multi', 
+					'title'		=> __('Filtering Setup Options', 'filtering'), 
+					
+					'opts'=> array(
+						array(	
+							'key' 			=> 'filtering_post_type',
+							'default'		=> 'post',
+							'type' 			=> 'select',
+							'opts' 			=> $post_type_array,
+							'label'	=> __( 'Select your post type to filter. Default is "post."', 'filtering'),
+						), 
+						array(
+							'key'			=>	'filtering_taxonomy',
+							'default'		=> 'category',
+							'type' 			=> 'select',
+							'opts' => $taxonomy_array,
+							'label'	=> __( 'Select taxonomy. Make sure the taxonomy goes with the post type, i.e. category with posts. Default is "category"', 'filtering'),
+						), 
+					  ), 
+					);
+					$options[] = array(
+					 'key'		=> 'filtering_terms_options',
+					'type'		=> 'multi', 
+					'title'		=> __('Enter Categories, Terms or Tags to Exclude or Include', 'filtering'), 
+					'help'	=> __('Use this area to either Exclude or Include Categories, Terms or Tags (Not both). If your category or term has children you can exclude them, the default is to show category/term children.', 'filtering'),
+					
+					'opts'	=> array(
+						array(
+							'key'			=> 'filtering_terms',
+							'default'		=> '',
+							'type' 			=> 'text',
+							'label'	=> __( 'Enter Categories, Terms or Tags  ( if multiple, separate using a comma )', 'filtering'),				
+
+						),
+
+						 array(
+						 	'key'			=> 'filtering_terms_type',
+							'type' 		=> 'select',
+							'default'	=> 'exclude',
+							'opts'	=> array(
+										'exclude'	=> array('name' => __( 'Exclude (Default)', 'filtering') ), 
+										'include'	=> array('name' => __( "Include", 'filtering') ),
+										), 
+							'label' => __( 'Exclude or Include these categories, terms or tags? Default is "Exclude."', 'filtering'),				
+							),
+							
+						array(
+							'key'			=> 'filtering_children',
+							'default'		=>	null,
+							'type' 			=> 'check',
+							'size'			=> 'small',
+							'label' 		=> __( 'Exclude Child Categories/Terms?', 'filtering'),
+								),
+					),
+				);	
+				$options[] = array(
+					'key'		=> 'filtering_navigation',
+					'type'		=> 'multi', 
+					'title'		=> __('Filtering Navigation Options', 'filtering'), 
+					
+					'opts'	=> array(
+						array(
+								'key'			=> 'filtering_menu',
+								'type'			=> 'select',
+								'default'		=> 'horizontal',
+								'label'	=> 'Menu Type on Desktop/Tablets (Default is Horizontal)',
+								'opts' => array(
+									'horizontal' 		=> array('name' => __( 'Horizontal (default)', 'filtering') ),
+									'select' 			=> array('name' => __( 'Dropdown/Select', 'filtering') ),
+														
+								)
+							),
+						array(
+									'key'			=> 'filtering_mobile',
+									'default'		=>	null,
+									'type' 			=> 'check',
+									
+									'label' 		=> __( 'Turn off Mobile Select Menu?', 'filtering'),
+								),
+						),
+					);
+					
+					$options[] = array(	
+					'key'		=> 'filtering_display',
+					'type'		=> 'multi', 
+					'title'		=> __('Filtering Display Options', 'filtering'), 
+					
+					'opts'	=> array(	
+						array(
+							'key'			=> 'filtering_item_width',
+						
+							'type' 			=> 'text',
+							'default'		=> '250px',
+							
+							'label' 		=> __( 'Width of  each item. Default is "250px". Enter just the width value, px will be added for you.' , 'filtering'),
+						),
+						array(
+							'key'			=> 'filtering_all_phrase',
+							'type' 			=> 'text',
+							'default'		=> __('Show All'),
+							
+							'label' 		=> __( 'Word/Phrase to use for All Items (Default is "Show All")' , 'filtering'),
+						),
+						
+						
+						array(
+								'key'			=> 'filtering_orderby',
+								'type'			=> 'select',
+								'default'		=> 'ID',
+								'label'	=> 'Order Posts By (If Not With Post Type Order Plugin)',
+								'opts' => array(
+									'ID' 		=> array('name' => __( 'Post ID (default)', 'filtering') ),
+									'title' 	=> array('name' => __( 'Title', 'filtering') ),
+									'date' 		=> array('name' => __( 'Date', 'filtering') ),
+									'modified' 	=> array('name' => __( 'Last Modified', 'filtering') ),
+									'rand' 		=> array('name' => __( 'Random', 'filtering') ),							
+								)
+							),
+							array(
+									'key'		=> 'filtering_order',
+									'default' => 'DESC',
+									'type' => 'select',
+									'opts' => array(
+										'DESC' 		=> array('name' => __( 'Descending (default)', 'filtering') ),
+										'ASC' 		=> array('name' => __( 'Ascending', 'filtering') ),
+									),
+									'label'=> __( 'Select sort order', 'filtering'),
+							),
+						
+						
+					),
+				);
+					$options[] = array(	
+					'key'			=> 'filtering_post_options',
+						'type'		=> 'multi', 
+						'title'		=> __('Post Options', 'filtering'), 
+						
+						'opts'	=> array(
+							array(
+							'key'			=> 'filtering_image_type',
+								'type' 		=> 'select',
+								'default'	=> 'images',
+								'opts'	=> array(
+										'images'	=> array('name' => __( 'Show Image on Top (Default)', 'filtering') ), 
+										'only_images'	=> array('name' => __( "Show Only the Image", 'filtering') ),
+										'only_text'	=> array('name' => __( "Text Only, no image", 'filtering') )
+
+									), 
+								'label' => __( 'Image Display Option (default is "Show Image on Top")', 'filtering'),				
+
+						),
+							array(
+									'key'			=> 'filtering_show_info',
+									'default'		=> null,
+									'type' 			=> 'check',
+									'size'			=> 'small',
+									'label' 		=> __( 'Show post date and author?', 'filtering'),
+								),
+							array(
+								'key'			=> 'filtering_date_format',
+								'default'		=> 'F j, Y',
+								'type' 			=> 'text',
+								
+								'label' 	=> __( 'Enter the date format e.g. F j, Y (Default)', 'filtering'),
+							),
+							 array(
+							 		'key'			=> 'filtering_show_excerpt',
+									'default'		=> null,
+									'type' 			=> 'check',
+									
+									'label' 		=> __( 'Show the excerpt?', 'filtering'),
+								),
+													
+							array(
+								'key'			=> 'filtering_excerpt_length',
+								'default'		=> '20',
+								'type' 			=> 'text',
+								
+								'label' 	=> __( 'Max number of words for excerpts (Default is 20)', 'filtering'),
+							),
+							array(
+								'key'			=> 'filtering_excerpt_more',
+								'default'		=> '',
+								'type' 			=> 'text',
+								'label' 	=> __( 'Continue reading phrase (... display at end of excerpt if no phrase entered)', 'filtering'),
+							),
+							
+							
+						),
+					);
+
+					$options[] = array(	
+					'key' 			=> 'filtering_image_formatting',
+						'type'		=> 'multi', 
+						'title'		=> __('Extra Image Options', 'filtering'), 
+						
+						'opts'	=> array(
+
+						 	array(
+						 		'key'			=> 'filtering_image_width',
+								'default'		=> '',
+								'type' 			=> 'text',
+								
+								'label' 		=> __( 'Maximum Image Width', 'filtering'),
+							),
+							array(
+								'key'			=> 'filtering_image_height',
+								'default'		=> '',
+								'type' 			=> 'text',
+								
+								'label' 		=> __( 'Maximum Image Height', 'filtering'),
+							),	
+								
+							array(
+								'key'			=> 'filtering_default_image',
+								
+								'type' 			=> 'image_upload',
+								'label' 		=> __( 'Upload an image to use when no thumbnail is present (optional)', 'filtering'),
+							),
+							
+							array(
+								'key'			=> 'filtering_thumb_frame',
+								'default'		=> '',
+								'type' 			=> 'check',
+								
+								'label' 		=> __( 'Add A Frame To Images', 'filtering'),
+							),
+							
+
+							),
+					 	);
+					
+					$options[] = array(
+					'key'			=>'filtering_pagination',
+						'type'		=> 'multi', 
+						'title'		=> __('Pagination (Optional)', 'filtering'), 
+						
+						'opts'	=> array(
+							array(
+								'key'			=> 'filtering_number',
+								'type' 			=> 'count_select',
+								'count_start'	=> $wp_per_page,
+								'count_number'	=> 999,
+								'label' 	=> __( 'Number of posts to show. You can limit the number of posts here or leave at "Select" to show all posts', 'filtering'),				
+								'help'			=>	'You cannot set the number of posts less than what is set in WordPress -> Settings -> Reading Settings',
+							),
+							
+						
+						),
+					);
+					
+					
+					
+		
+			return $options;
+	}
+
+	function section_optionator( $settings ){
+		
+		$settings = wp_parse_args($settings, $this->optionator_default);
+
+		$post_type_array = array();
+		if(post_type_exists('boxes')) {
+		// Builtin types needed.
+			$builtin = array(
+			'post',
+			'boxes',
+			
+			);
+		} else {
+			$builtin = array(
+			'post',
+			
+			
+			);
+		}	
 			// All CPTs except builtins
 			$cpts = get_post_types( array(
 			'public'   => true,
@@ -144,6 +530,7 @@ function section_persistent() {
 	    			
 	    			'banner-sets',
 	    			'feature-sets',
+	    			'accordion-sets',
 
 				);
 				// Builtin types needed.
@@ -456,6 +843,7 @@ function section_persistent() {
 
 		
 			printf( '<div class="section-filtering %s">' , $filtering_class);
+
 				$this->draw_navigation();
 				$this->draw_filtering();
 			
@@ -466,37 +854,8 @@ function section_persistent() {
     }
   
 
-function set_per_page( $query ) {
-    	
-    	
-    // Fixes pagination issue on archive pages
-		global $wp_query;
 
-	if($query->is_page()&&($query === $wp_query)) {
-		return $query;
-	}else {
-
-		if ($this->opt( 'filtering_override_home')) {	
-	    	if($query->is_home()&&($query === $wp_query)){
-	    		$query->set( 'posts_per_page',  $this->opt( 'filtering_number'));
-	    		return $query;
-	    	}
-		}
-		if ($this->opt( 'filtering_override_archive')) {	
-	    	if($query->is_post_type_archive()&&($query === $wp_query)){
-	    		$query->set( 'posts_per_page',  $this->opt( 'filtering_number'));
-	    		return $query;
-	    	}
-	    	if($query->is_tax()&&($query === $wp_query)){
-	    		$query->set( 'posts_per_page',  $this->opt( 'filtering_number'));
-	    		return $query;
-	    	}
-		}
-	}
-	 
-}
 	
-
 
   	function taxonomy_query(){
   	 	global $filtering_ID;
@@ -504,7 +863,7 @@ function set_per_page( $query ) {
   		$filtering_tax = ( $this->opt( 'filtering_taxonomy', $this->oset ) ) ? $this->opt( 'filtering_taxonomy', $this->oset ) : 'category';
 		$filtering_terms_type = ( $this->opt( 'filtering_terms_type', $this->oset ) ) ? $this->opt( 'filtering_terms_type', $this->oset ) : 'exclude';
      	$filtering_terms = ( $this->opt( 'filtering_terms', $this->oset ) ) ? $this->opt( 'filtering_terms', $this->oset ) : '';
-      	 
+      	$filtering_terms = str_replace(', ', ',', $filtering_terms); 
 
 
   	// Setup Query Terms
@@ -512,10 +871,13 @@ function set_per_page( $query ) {
 		// Get Terms
       	
         if($filtering_terms) {
+        	
+
         	$terms_list = '';
       		$terms_children = '';
       		$childterm = null;	
-         	$filter_terms = explode(", ", $filtering_terms);
+         	$filter_terms = explode(",", $filtering_terms);
+         	
             foreach ($filter_terms as $filter_term) {
                 $term = get_term_by( 'name',  $filter_term,  $filtering_tax  );
                 $is_tag = is_tag($term);
@@ -790,9 +1152,9 @@ function set_per_page( $query ) {
 	   			$box_link = implode(' ' , get_post_meta($post->ID, 'the_box_icon_link'));
 				$more_text = ' <a href="'. $box_link .'">... '.$filtering_excerpt_more.'</a>';
 				if($box_link== null) :
-					$filtering_excerpt = do_shortcode($post->post_content);
+					$filtering_excerpt = $post->post_content;
 				else :
-				$filtering_excerpt = do_shortcode($post->post_content) .' ' . $more_text;
+				$filtering_excerpt = $post->post_content .' ' . $more_text;
 				endif;
 
 			}else {
