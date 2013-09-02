@@ -8,8 +8,10 @@
 	Cloning: false
 	Workswith: content, template, main
 	Failswith: archive, tag, category, author
-	Version: 1.6
+	PageLines: true
 	v3: true
+	Filter: component
+	Version: 1.6.1
 	Demo: http://pagelines.ellenjanemoore.com/filtering-demo/
 	
 */
@@ -26,7 +28,7 @@ class Filtering extends PageLinesSection {
 	/**
 	* Load js
 	*/
-	const version = '1.6';
+	const version = '1.6.1';
 
 function section_styles(){
 		
