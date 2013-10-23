@@ -35,7 +35,11 @@ Filtering is a great way to show off your posts or custom post types while being
 
 
 == Changelog ==
-= 1.6.1
+= 1.7 =
+* Updated Options for DMS 1.1
+* Added ability to clone Filtering to display more than one filtering section on a page.
+
+= 1.6.1 =
 * Added Filter: component to classify section as a component
 * Added and PageLines: true to trigger updates 
 

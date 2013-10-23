@@ -80,44 +80,7 @@ jQuery(document).ready(function(){
 	      });
 
 	     
-	       mycontainer.isotope({
-     			itemSelector: '.item',
-     			layoutMode: 'masonry',
-     			
-
-     			
-     			
-  		}).imagesLoaded( function() {
-  			jQuery(".filtering-image").equalizeCols();
-			jQuery(".item-info").equalizeCols();
-    	// trigger again after images have loaded
-    		mycontainer.isotope('reLayout');
-  		});
-		
-
-	   // filter items when filter link is clicked
-	jQuery('.options a').click(function(){
-	  var selector = jQuery(this).attr('data-filter');
-	  mycontainer.isotope({ filter: selector });
-	    
-	  var optionSet=jQuery(this).parents(".options");
-		if(jQuery(this).hasClass("selected")){
-			return false}
-			jQuery(optionSet).find(".selected").removeClass("selected");
-			jQuery(this).addClass("selected");
-		return false;
-	  });	  
-			
-        
-	   // filter items when filter link is clicked
-	jQuery('select.select').change(function(){
-		var filters = jQuery(this).val();
-
-        mycontainer.isotope({
-            filter: filters
-        });
-	   
-	 }); 
+	       
 
 	
 	

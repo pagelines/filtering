@@ -11,7 +11,7 @@
 	PageLines: true
 	v3: true
 	Filter: component
-	Version: 1.6.1
+	Version: 1.7
 	Demo: http://pagelines.ellenjanemoore.com/filtering-demo/
 	
 */
@@ -28,7 +28,7 @@ class Filtering extends PageLinesSection {
 	/**
 	* Load js
 	*/
-	const version = '1.6.1';
+	const version = '1.7';
 
 function section_styles(){
 		
@@ -41,12 +41,57 @@ function section_styles(){
 
 
 	function section_head() {
-		
+		if(function_exists('pl_has_editor')){
+				$filtering_clone = '#filtering'.$this->get_the_id();
+			} else {
+			   	$filtering_clone = '#filtering'.$this->oset['clone_id'];				
+			}
+        
 	
 		?>
 		<script>
 		
 		jQuery(document).ready(function(){
+
+			var mycontainer = jQuery('<?php echo $filtering_clone ?> .filtering');
+			 mycontainer.isotope({
+     			itemSelector: '.item',
+     			layoutMode: 'masonry',
+     			
+
+     			
+     			
+  		}).imagesLoaded( function() {
+  			jQuery(".filtering-image").equalizeCols();
+			jQuery(".item-info").equalizeCols();
+    	// trigger again after images have loaded
+    		mycontainer.isotope('reLayout');
+  		});
+		
+
+	   // filter items when filter link is clicked
+	jQuery('<?php echo $filtering_clone ?> .options a').click(function(){
+	  var selector = jQuery(this).attr('data-filter');
+	  mycontainer.isotope({ filter: selector });
+	    
+	  var optionSet=jQuery(this).parents(".options");
+		if(jQuery(this).hasClass("selected")){
+			return false}
+			jQuery(optionSet).find(".selected").removeClass("selected");
+			jQuery(this).addClass("selected");
+		return false;
+	  });	  
+			
+        
+	   // filter items when filter link is clicked
+	jQuery('<?php echo $filtering_clone ?> select.select').change(function(){
+		var filters = jQuery(this).val();
+
+        mycontainer.isotope({
+            filter: filters
+        });
+	   
+	 }); 
 			
 			jQuery('body').addClass('filtering-section');
 			// Get image height to vertically align image to bottom
