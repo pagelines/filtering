@@ -11,7 +11,7 @@
 	PageLines: true
 	v3: true
 	Filter: component
-	Version: 1.7
+	Version: 1.7.1
 	Demo: http://pagelines.ellenjanemoore.com/filtering-demo/
 	
 */
@@ -28,7 +28,7 @@ class Filtering extends PageLinesSection {
 	/**
 	* Load js
 	*/
-	const version = '1.7';
+	const version = '1.7.1';
 
 function section_styles(){
 		
@@ -461,7 +461,14 @@ function section_styles(){
 								'type' 			=> 'text',
 								'label' 	=> __( 'Continue reading phrase (... display at end of excerpt if no phrase entered)', 'filtering'),
 							),
-							
+							array(
+							 		'key'			=> 'filtering_show_shortcodes',
+									'default'		=> null,
+									'type' 			=> 'check',
+									
+									'label' 		=> __( 'Show shortcodes in excerpt? Will display all shortcodes except [gallery]. Use with caution.', 'filtering'),
+								),
+								
 							
 						),
 					);
@@ -1206,9 +1213,12 @@ function section_styles(){
 				endif;
 
 			}else {
-				
-				$filtering_excerpt=$this->filtering_trim_excerpt($text);
-				}
+				if($this->opt('filtering_show_shortcodes' , $this->oset)) {	
+						$filtering_excerpt = $this->filtering_trim_excerpt_tags($content);					
+				} else {
+					$filtering_excerpt=$this->filtering_trim_excerpt($text);
+				}				
+			}
 
     		printf('<div class="item-excerpt">%s</div>', $filtering_excerpt );
     		
@@ -1473,7 +1483,32 @@ function section_styles(){
 	 
 
  }
-  
+  	
+
+ 	function filtering_trim_excerpt_tags($content) {
+ 		global $post;
+		$filtering_excerpt_len = ($this->opt('filtering_excerpt_length' , $this->oset)) ? ($this->opt('filtering_excerpt_length' , $this->oset)) : '20';
+	    $filtering_excerpt_more = ($this->opt('filtering_excerpt_more' , $this->tset)) ? ($this->opt('filtering_excerpt_more' , $this->tset)) : '';
+	   	$permalink = get_permalink($post->ID);
+	   	$filtering_more = ' <a href="'. $permalink .'">'.$filtering_excerpt_more.'</a>';
+ 		if ( '' == $content ) {
+	 		$content = get_the_content();
+	 		$excerpt_length = intval($filtering_excerpt_len);
+	 		$words = explode(' ', $content, $excerpt_length + 1);
+			$content = wp_trim_words( $content , $filtering_excerpt_len );
+			$content = strip_tags($content, '[, ]');
+			
+			if (count($words) > $excerpt_length) {
+				$content = $content . ' ' . $filtering_more;
+			} else {
+				$content = $content;
+			}
+			$content = apply_filters('the_content' , $content );
+			remove_shortcode('gallery');
+
+		}
+		return $content;
+ 	}
 
 
 
@@ -1492,6 +1527,7 @@ function section_styles(){
 			$text = apply_filters('the_content', $text);
 			$text = str_replace(']]>', ']]>', $text);
 			$text = strip_tags($text);
+
 			$excerpt_length = $filtering_excerpt_len;
 			$words = explode(' ', $text, $excerpt_length + 1);
 			if (count($words) > $excerpt_length) {
