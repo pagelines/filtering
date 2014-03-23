@@ -11,7 +11,7 @@
 	PageLines: true
 	v3: true
 	Filter: component
-	Version: 1.7.1
+	Version: 1.7.2
 	Demo: http://pagelines.ellenjanemoore.com/filtering-demo/
 	
 */
@@ -28,7 +28,7 @@ class Filtering extends PageLinesSection {
 	/**
 	* Load js
 	*/
-	const version = '1.7.1';
+	const version = '1.7.2';
 
 function section_styles(){
 		
@@ -109,7 +109,7 @@ function section_styles(){
 <?php
 
 		// Add frame around image if checked
-		if($this->opt( 'filtering_thumb_frame', $this->oset )) {
+		if($this->opt( 'filtering_thumb_frame' )) {
 		?>
 		<script>
 	 	jQuery(document).ready(function() {
@@ -120,7 +120,7 @@ function section_styles(){
 		<?php
 		}
 		
-		$filtering_menu = ( $this->opt( 'filtering_menu', $this->oset ) ) ? $this->opt( 'filtering_menu', $this->oset ) : 'horizontal';
+		$filtering_menu = ( $this->opt( 'filtering_menu' ) ) ? $this->opt( 'filtering_menu' ) : 'horizontal';
       
 		if($filtering_menu !='horizontal') {
 		?>
@@ -133,7 +133,7 @@ function section_styles(){
 		</script>
 		<?php
 		}
-		if($this->opt( 'filtering_mobile', $this->oset )) {
+		if($this->opt( 'filtering_mobile' )) {
 		?>
 		<script>
 	 	jQuery(document).ready(function() {
@@ -479,7 +479,12 @@ function section_styles(){
 						'title'		=> __('Extra Image Options', 'filtering'), 
 						
 						'opts'	=> array(
-
+							array(
+								'key'			=> 'filtering_image_sizes',
+								'type' 			=> 'select_imagesizes',
+								'label' 		=> __( 'Select Thumb Size', 'filtering' ),
+								'help'			=> __( 'You can select a thumbsize or enter image sizes below.', 'filtering' ),
+							),
 						 	array(
 						 		'key'			=> 'filtering_image_width',
 								'default'		=> '',
@@ -523,7 +528,7 @@ function section_styles(){
 							array(
 								'key'			=> 'filtering_number',
 								'type' 			=> 'count_select',
-								'count_start'	=> $wp_per_page,
+								'count_start'	=> (int) $wp_per_page,
 								'count_number'	=> 999,
 								'label' 	=> __( 'Number of posts to show. You can limit the number of posts here or leave at "Select" to show all posts', 'filtering'),				
 								'help'			=>	'You cannot set the number of posts less than what is set in WordPress -> Settings -> Reading Settings',
@@ -893,7 +898,7 @@ function section_styles(){
         global $post; global $filtering_ID;
         $oset = array('post_id' => $filtering_ID);
         
-        $filtering_class = ( $this->opt( 'filtering_class', $this->oset ) ) ? $this->opt( 'filtering_class', $this->oset ) : null;
+        $filtering_class = ( $this->opt( 'filtering_class' ) ) ? $this->opt( 'filtering_class' ) : null;
 				
 
 		
@@ -915,12 +920,12 @@ function section_styles(){
   	function taxonomy_query(){
   	 	global $filtering_ID;
         $oset = array('post_id' => $filtering_ID);
-  		$filtering_tax = ( $this->opt( 'filtering_taxonomy', $this->oset ) ) ? $this->opt( 'filtering_taxonomy', $this->oset ) : 'category';
-		$filtering_terms_type = ( $this->opt( 'filtering_terms_type', $this->oset ) ) ? $this->opt( 'filtering_terms_type', $this->oset ) : 'exclude';
-     	$filtering_terms = ( $this->opt( 'filtering_terms', $this->oset ) ) ? $this->opt( 'filtering_terms', $this->oset ) : '';
+  		$filtering_tax = ( $this->opt( 'filtering_taxonomy' ) ) ? $this->opt( 'filtering_taxonomy' ) : 'category';
+		$filtering_terms_type = ( $this->opt( 'filtering_terms_type' ) ) ? $this->opt( 'filtering_terms_type' ) : 'exclude';
+     	$filtering_terms = ( $this->opt( 'filtering_terms' ) ) ? $this->opt( 'filtering_terms' ) : '';
       	$filtering_terms = str_replace(', ', ',', $filtering_terms); 
 
-
+      	
   	// Setup Query Terms
 
 		// Get Terms
@@ -957,7 +962,7 @@ function section_styles(){
              }	
             	$terms_list= implode(", ", $term_array); 
             // See if want child terms in query too
-            if($this->opt('filtering_children', $this->oset )) {
+            if($this->opt('filtering_children' )) {
             	$these_terms = $terms_list;
         	} else {
         		
@@ -971,13 +976,13 @@ function section_styles(){
         	
         // See if terms are to be excluded or included and whether to show children
         	if($filtering_terms_type != 'exclude'){
-        		if($this->opt('filtering_children', $this->oset )) {
+        		if($this->opt('filtering_children' )) {
             	$args2 = array('include'=>$these_terms, 'parent'=>0);
             	} else {
             		$args2 = array('include'=>$these_terms);
             	}
         	} else {
-        		if($this->opt('filtering_children', $this->oset )) {
+        		if($this->opt('filtering_children' )) {
             	$args2 = array('exclude_tree'=>$these_terms);
             	} else {
             		$args2 = array('exclude'=>$these_terms);
@@ -985,7 +990,7 @@ function section_styles(){
         	}
 	    	
 	    } else {
-	    	if($this->opt('filtering_children', $this->oset )) {
+	    	if($this->opt('filtering_children' )) {
             	$args2 = array('parent'=>0);
             	} else {
             		$args2 = null;
@@ -998,6 +1003,7 @@ function section_styles(){
 	
 	 $terms = get_terms($filtering_tax, $args2);
 
+
 	  return $terms;
 
   } 
@@ -1005,7 +1011,7 @@ function section_styles(){
   function filtering_query(){
 
   	global $filtering_ID;
-  	$filtering_tax = ( $this->opt( 'filtering_taxonomy', $this->oset ) ) ? $this->opt( 'filtering_taxonomy', $this->oset ) : 'category';
+  	$filtering_tax = ( $this->opt( 'filtering_taxonomy' ) ) ? $this->opt( 'filtering_taxonomy' ) : 'category';
 		
         $oset = array('post_id' => $filtering_ID);
 
@@ -1014,13 +1020,13 @@ function section_styles(){
     
   	 // Query Variables
 
-    	$filtering_type = ( $this->opt( 'filtering_post_type', $this->oset ) ) ? $this->opt( 'filtering_post_type', $this->oset ) : 'post';
-		$filtering_tax = ( $this->opt( 'filtering_taxonomy', $this->oset ) ) ? $this->opt( 'filtering_taxonomy', $this->oset ) : 'category';
-		$filtering_orderby = ( $this->opt( 'filtering_orderby', $this->oset ) ) ? $this->opt( 'filtering_orderby', $this->oset ) : 'ID';
-		$filtering_order = ( $this->opt( 'filtering_order', $this->oset ) ) ? $this->opt( 'filtering_order', $this->oset ) : 'DESC';
-		$filtering_number = ( $this->opt( 'filtering_number', $this->oset ) ) ? $this->opt( 'filtering_number', $this->oset ) : null;
+    	$filtering_type = ( $this->opt( 'filtering_post_type' ) ) ? $this->opt( 'filtering_post_type' ) : 'post';
+		$filtering_tax = ( $this->opt( 'filtering_taxonomy' ) ) ? $this->opt( 'filtering_taxonomy' ) : 'category';
+		$filtering_orderby = ( $this->opt( 'filtering_orderby' ) ) ? $this->opt( 'filtering_orderby' ) : 'ID';
+		$filtering_order = ( $this->opt( 'filtering_order' ) ) ? $this->opt( 'filtering_order' ) : 'DESC';
+		$filtering_number = ( $this->opt( 'filtering_number' ) ) ? $this->opt( 'filtering_number' ) : null;
       	
-      	if($this->opt( 'filtering_number', $this->oset ) ) {
+      	if($this->opt( 'filtering_number' ) ) {
       		$filtering_item_number = $filtering_number;
 
       	} else {
@@ -1038,7 +1044,7 @@ function section_styles(){
 
 	
 
-	if($this->opt('filtering_children', $this->oset)) {
+	if($this->opt('filtering_children')) {
 		$include_children = false;
 		}else {
 			$include_children = true;
@@ -1111,18 +1117,18 @@ function section_styles(){
         	
         } else {
         $filtering = $this->filtering_query();
-        $filtering_tax = ( $this->opt( 'filtering_taxonomy', $this->oset ) ) ? $this->opt( 'filtering_taxonomy', $this->oset ) : 'category';
+        $filtering_tax = ( $this->opt( 'filtering_taxonomy' ) ) ? $this->opt( 'filtering_taxonomy' ) : 'category';
         $terms = $this->taxonomy_query();
     }
         
         // Option Variables
 
-        $filtering_width = ($this->opt('filtering_item_width' , $this->oset)) ? $this->opt('filtering_item_width' , $this->oset).'px' : '250px';
-		$filtering_show_excerpt = ($this->opt('filtering_show_excerpt' , $this->oset)) ? $this->opt('filtering_show_excerpt' , $this->oset) : '' ;
-		$filtering_excerpt_len = ($this->opt('filtering_excerpt_length' , $this->oset)) ? ($this->opt('filtering_excerpt_length' , $this->oset)) : '20';
+        $filtering_width = ($this->opt('filtering_item_width' )) ? $this->opt('filtering_item_width' ).'px' : '250px';
+		$filtering_show_excerpt = ($this->opt('filtering_show_excerpt' )) ? $this->opt('filtering_show_excerpt' ) : '' ;
+		$filtering_excerpt_len = ($this->opt('filtering_excerpt_length' )) ? ($this->opt('filtering_excerpt_length' )) : '20';
         $filtering_date_format = ( $this->opt( 'filtering_date_format', $this->tset ) ) ? $this->opt( 'filtering_date_format', $this->tset ) : 'F, j Y';
-		$filtering_image = ($this->opt('filtering_image_type' , $this->oset)) ? $this->opt('filtering_image_type' , $this->oset) : 'images';
-       	$filtering_default =  ( $this->opt( 'filtering_default_image', $this->oset ) ) ? $this->opt( 'filtering_default_image', $this->oset ) : '' ;
+		$filtering_image = ($this->opt('filtering_image_type' )) ? $this->opt('filtering_image_type' ) : 'images';
+       	$filtering_default =  ( $this->opt( 'filtering_default_image' ) ) ? $this->opt( 'filtering_default_image' ) : '' ;
        	
 		
       
@@ -1186,7 +1192,7 @@ function section_styles(){
 
 	<?php
 
-		if($this->opt('filtering_show_info', $this->oset)) {
+		if($this->opt('filtering_show_info')) {
 			printf('<div class="post-info">%s By ' , $date);
 			echo the_author_posts_link();
 			echo '</div>';
@@ -1194,7 +1200,7 @@ function section_styles(){
 
 		// Draw excerpt as long as true
 		
-    	if($this->opt('filtering_show_excerpt', $this->oset)) {
+    	if($this->opt('filtering_show_excerpt')) {
     		// Get post excerpt
             	if($post->post_excerpt != ''){
 				$filtering_excerpt = $post->post_excerpt;
@@ -1213,7 +1219,7 @@ function section_styles(){
 				endif;
 
 			}else {
-				if($this->opt('filtering_show_shortcodes' , $this->oset)) {	
+				if($this->opt('filtering_show_shortcodes' )) {	
 						$filtering_excerpt = $this->filtering_trim_excerpt_tags($content);					
 				} else {
 					$filtering_excerpt=$this->filtering_trim_excerpt($text);
@@ -1307,7 +1313,7 @@ function section_styles(){
         	
         } else {
         $filtering = $this->filtering_query();
-        $filtering_tax = ( $this->opt( 'filtering_taxonomy', $this->oset ) ) ? $this->opt( 'filtering_taxonomy', $this->oset ) : 'category';
+        $filtering_tax = ( $this->opt( 'filtering_taxonomy' ) ) ? $this->opt( 'filtering_taxonomy' ) : 'category';
         $terms = $this->taxonomy_query();
     }
   	  $term_list = array();
@@ -1326,7 +1332,7 @@ function section_styles(){
 	         	endforeach;   
          	endwhile;		
          	
-         
+        
   
   	$nav_terms = array();
          if(is_tax()) {
@@ -1345,7 +1351,7 @@ function section_styles(){
          $parent = $term->parent;
          if( in_array( $term->term_id, $term_list ) ){
          			
-         	if($this->opt('filtering_children', $this->oset)) {
+         	if($this->opt('filtering_children')) {
          		if($term->parent > 0) {
          			 null;
          		} else {
@@ -1360,7 +1366,11 @@ function section_styles(){
 
         endforeach; 
         }
-    	
+
+        //	$nav_terms = implode(",", $nav_terms);
+        	
+    	//	$nav_terms = get_terms($filtering_tax, array('order'=>'DESC', 'include' => $nav_terms));
+    		
         	
          ?>
 
@@ -1415,8 +1425,8 @@ function section_styles(){
  	global $post;
  
  	// Image variables
- 	$filtering_image_width = ($this->opt('filtering_image_width' , $this->oset)) ? $this->opt('filtering_image_width' , $this->oset) : '';
-		$filtering_image_height = ($this->opt('filtering_image_height' , $this->oset)) ? $this->opt('filtering_image_height' , $this->oset) : '';
+ 		$filtering_image_width = ($this->opt('filtering_image_width' )) ? $this->opt('filtering_image_width' ) : '';
+		$filtering_image_height = ($this->opt('filtering_image_height' )) ? $this->opt('filtering_image_height' ) : '';
        	$thumbnail_width = get_option( 'thumbnail_size_w' );
 		$thumbnail_height = get_option( 'thumbnail_size_h' );
 
@@ -1487,7 +1497,7 @@ function section_styles(){
 
  	function filtering_trim_excerpt_tags($content) {
  		global $post;
-		$filtering_excerpt_len = ($this->opt('filtering_excerpt_length' , $this->oset)) ? ($this->opt('filtering_excerpt_length' , $this->oset)) : '20';
+		$filtering_excerpt_len = ($this->opt('filtering_excerpt_length' )) ? ($this->opt('filtering_excerpt_length' )) : '20';
 	    $filtering_excerpt_more = ($this->opt('filtering_excerpt_more' , $this->tset)) ? ($this->opt('filtering_excerpt_more' , $this->tset)) : '';
 	   	$permalink = get_permalink($post->ID);
 	   	$filtering_more = ' <a href="'. $permalink .'">'.$filtering_excerpt_more.'</a>';
@@ -1514,7 +1524,7 @@ function section_styles(){
 
 	function filtering_trim_excerpt($text) { // Fakes an excerpt if needed
 		global $post;
-		$filtering_excerpt_len = ($this->opt('filtering_excerpt_length' , $this->oset)) ? ($this->opt('filtering_excerpt_length' , $this->oset)) : '20';
+		$filtering_excerpt_len = ($this->opt('filtering_excerpt_length' )) ? ($this->opt('filtering_excerpt_length' )) : '20';
 	    $filtering_excerpt_more = ($this->opt('filtering_excerpt_more' , $this->tset)) ? ($this->opt('filtering_excerpt_more' , $this->tset)) : '';
 	   	$permalink = get_permalink($post->ID);
 				
