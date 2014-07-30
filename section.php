@@ -10,8 +10,8 @@
 	Failswith: archive, tag, category, author
 	PageLines: true
 	v3: true
-	Filter: component
-	Version: 1.7.2
+	Filter: component, format
+	Version: 1.7.3
 	Demo: http://pagelines.ellenjanemoore.com/filtering-demo/
 	
 */
@@ -1381,13 +1381,13 @@ function section_styles(){
 		if(is_tax()) {
 			null;
 		} else {
-			printf('<li><a href="#show-all" data-filter="*" class="selected">%s</a></li>' , $filtering_all_phrase);
+			printf('<li class="filtering-all"><a href="#show-all" data-filter="*" class="selected">%s</a></li>' , $filtering_all_phrase);
 		
 		}	
 			foreach( $nav_terms as $term_id ){
 				$term = get_term( $term_id, $filtering_tax ); ?>
 
-		    	<li><a href="#" data-filter=".<?php echo $term->slug?>"><?php echo $term->name?></a></li>
+		    	<li class="<?php echo $term->slug?>"><a href="#" data-filter=".<?php echo $term->slug?>"><?php echo $term->name?></a></li>
 
 		    <?php } ?>
 
