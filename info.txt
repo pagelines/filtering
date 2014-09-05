@@ -36,6 +36,8 @@ Filtering is a great way to show off your posts or custom post types while being
 
 == Changelog ==
 
+= 1.7.4 =
+* Allow html in title
 = 1.7.3 =
 * Added slug as class name in navigation and class filtering-all for Show All 
 * Changed thumbnail and added screenshot

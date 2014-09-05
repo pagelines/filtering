@@ -11,7 +11,7 @@
 	PageLines: true
 	v3: true
 	Filter: component, format
-	Version: 1.7.3
+	Version: 1.7.4
 	Demo: http://pagelines.ellenjanemoore.com/filtering-demo/
 	
 */
@@ -28,7 +28,7 @@ class Filtering extends PageLinesSection {
 	/**
 	* Load js
 	*/
-	const version = '1.7.2';
+	const version = '1.7.4';
 
 function section_styles(){
 		
@@ -1167,7 +1167,7 @@ function section_styles(){
 	 // Draw Title as long as not only_images
 	 		
 	 if($filtering_image != 'only_images')	{
-	 			$title = esc_html(get_the_title($post->ID));
+	 			$title = get_the_title($post->ID);
 				$box_link = implode(' ' , get_post_meta($post->ID, 'the_box_icon_link'));
 				
 				if($filtering_tax == 'box-sets') {
